@@ -1,4 +1,3 @@
-
 <?php
 // kelola_siswa.php
 
@@ -61,6 +60,16 @@ if (!$hasil) {
 
         .btn-aksi {
             margin: 2px;
+        }
+
+        /* Mengubah warna tombol primary menjadi hitam pekat */
+        .btn-primary {
+            background-color: #000000 !important;
+            border-color: #000000 !important;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #1a1a1a !important;
+            border-color: #1a1a1a !important;
         }
     </style>
 </head>
@@ -199,10 +208,10 @@ if (!$hasil) {
                                     </td>
 
                                     <td>
-                                      <a href="edit_siswa.php?nis=<?= urlencode($nis); ?>"
-                                       class="btn btn-warning btn-sm btn-aksi">
-                                       Edit
-                                    </a>
+                                       <a href="edit_siswa.php?nis=<?= urlencode($nis); ?>"
+                                           class="btn btn-warning btn-sm btn-aksi">
+                                           Edit
+                                        </a>
 
                                         <a
                                             href="hapus_siswa.php?nis=<?= urlencode($nis); ?>"

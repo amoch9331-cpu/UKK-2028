@@ -1,4 +1,3 @@
-
 <?php
 // kelola_kelas.php
 
@@ -23,12 +22,10 @@ if (!$hasil) {
     <title>Kelola Kelas</title>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
 
     <!-- DataTables CSS -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
     <style>
         body {
@@ -48,6 +45,7 @@ if (!$hasil) {
         .judul-halaman {
             font-weight: 600;
             margin-bottom: 20px;
+            color: #212529;
         }
 
         #tabelKelas th,
@@ -70,6 +68,7 @@ if (!$hasil) {
 <div class="container-fluid">
     <div class="row">
 
+        <!-- SIDEBAR (Lebar proporsional col-md-3 / col-lg-2 seperti standar admin template) -->
         <?php include 'layout/sidebar.php'; ?>
 
         <!-- KONTEN UTAMA -->
@@ -79,32 +78,24 @@ if (!$hasil) {
 
             <div class="card">
 
-                <div class="card-header bg-white d-flex
-                            justify-content-between align-items-center">
-
-                    <h5 class="mb-0">Data Kelas</h5>
-
-                    <a href="tambah_kelas.php"
-                       class="btn btn-primary btn-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 font-weight-bold">Data Kelas</h5>
+                    <a href="tambah_kelas.php" class="btn btn-primary btn-sm font-weight-bold">
                         + Tambah Kelas
                     </a>
-
                 </div>
 
                 <div class="card-body">
 
                     <div class="mb-3">
-                        <a href="dashboard.php"
-                           class="btn btn-secondary btn-sm">
+                        <a href="dashboard.php" class="btn btn-secondary btn-sm">
                             Kembali ke Dashboard
                         </a>
                     </div>
 
                     <div class="table-responsive">
 
-                        <table id="tabelKelas"
-                               class="table table-striped table-bordered table-hover"
-                               style="width:100%">
+                        <table id="tabelKelas" class="table table-striped table-bordered table-hover" style="width:100%">
 
                             <thead class="thead-dark">
                                 <tr>
@@ -124,7 +115,6 @@ if (!$hasil) {
 
                                 <?php
                                 $no = 1;
-
                                 while ($row = mysqli_fetch_assoc($hasil)) {
                                 ?>
 
@@ -132,80 +122,43 @@ if (!$hasil) {
                                     <td><?= $no++; ?></td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['id'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) $row['id'], ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['nama'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) $row['nama'], ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['tingkat'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) $row['tingkat'], ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['jurusan'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) $row['jurusan'], ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
                                         <?php if ((int) $row['status_aktif'] === 1) { ?>
-
-                                            <span class="badge badge-success">
-                                                Aktif
-                                            </span>
-
+                                            <span class="badge badge-success px-2 py-1">Aktif</span>
                                         <?php } else { ?>
-
-                                            <span class="badge badge-danger">
-                                                Tidak Aktif
-                                            </span>
-
+                                            <span class="badge badge-danger px-2 py-1">Tidak Aktif</span>
                                         <?php } ?>
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['created_at'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) ($row['created_at'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['updated_at'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
+                                        <?= htmlspecialchars((string) ($row['updated_at'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
                                     </td>
 
                                     <td>
-                                        <a
-                                            href="edit_kelas.php?id=<?= urlencode((string) $row['id']); ?>"
-                                            class="btn btn-warning btn-sm btn-aksi">
+                                        <a href="edit_kelas.php?id=<?= urlencode((string) $row['id']); ?>" class="btn btn-warning btn-sm btn-aksi text-dark font-weight-bold">
                                             Edit
                                         </a>
 
-                                        <a
-                                            href="hapus_kelas.php?id=<?= urlencode((string) $row['id']); ?>"
-                                            class="btn btn-danger btn-sm btn-aksi"
-                                            onclick="return confirm('Yakin ingin menghapus data kelas ini?');">
+                                        <a href="hapus_kelas.php?id=<?= urlencode((string) $row['id']); ?>" class="btn btn-danger btn-sm btn-aksi font-weight-bold" onclick="return confirm('Yakin ingin menghapus data kelas ini?');">
                                             Hapus
                                         </a>
                                     </td>
@@ -234,15 +187,12 @@ if (!$hasil) {
 
 <!-- DataTables JavaScript -->
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- Inisialisasi DataTables -->
 <script>
 $(document).ready(function () {
-
     $('#tabelKelas').DataTable({
-
         language: {
             search: "Cari:",
             lengthMenu: "Tampilkan _MENU_ data",
@@ -251,7 +201,6 @@ $(document).ready(function () {
             infoFiltered: "(difilter dari _MAX_ total data)",
             zeroRecords: "Data kelas tidak ditemukan",
             emptyTable: "Belum ada data kelas",
-
             paginate: {
                 first: "Pertama",
                 last: "Terakhir",
@@ -259,30 +208,20 @@ $(document).ready(function () {
                 previous: "Sebelumnya"
             }
         },
-
         pageLength: 10,
-
         lengthMenu: [5, 10, 25, 50, 100],
-
         searching: true,
-
         ordering: true,
-
         paging: true,
-
         autoWidth: false,
-
         columnDefs: [
             {
                 targets: [0, 8],
                 orderable: false
             }
         ],
-
         order: [[2, 'asc']]
-
     });
-
 });
 </script>
 

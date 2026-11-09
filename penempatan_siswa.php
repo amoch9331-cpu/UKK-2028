@@ -66,6 +66,21 @@ $hasil = mysqli_query($koneksi, $sql);
     <!-- DataTables Bootstrap 5 -->
     <link href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css"
           rel="stylesheet">
+
+    <style>
+        /* Mengubah warna latar belakang card-header dan tombol primary menjadi hitam/gelap */
+        .card-header.bg-primary {
+            background-color: #343a40 !important;
+        }
+        .btn-primary {
+            background-color: #343a40 !important;
+            border-color: #343a40 !important;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #23272b !important;
+            border-color: #1d2124 !important;
+        }
+    </style>
 </head>
 
 <body>

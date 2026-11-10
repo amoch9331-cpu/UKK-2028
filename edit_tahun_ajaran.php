@@ -11,96 +11,136 @@ $data = mysqli_fetch_assoc($hasil);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
-    <title>Edit Tahun Ajaran</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Tahun Ajaran - Sistem Informasi Pelanggaran Siswa</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+    <!-- FontAwesome untuk ikon -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f4f6f9;
+        }
+        .container-fluid, .row {
+            height: 100%;
+        }
+        /* Memastikan sidebar memanjang penuh ke bawah */
+        .row > div:first-child {
+            height: 100%;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: bold;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: white;
+        }
+        .btn-dark-custom:hover {
+            background-color: #23272b;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>Edit Tahun Ajaran</h1>
+<div class="container-fluid p-0">
+    <div class="row no-gutters h-100">
 
-    <form action="proses_edit_tahun_ajaran.php" method="POST">
+        <!-- Sidebar -->
+        <?php include 'layout/sidebar.php'; ?>
 
-        <input type="hidden" name="id"
-               value="<?php echo $data['id']; ?>">
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 p-4" style="overflow-y: auto; height: 100vh;">
 
-        <table>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h3 mb-0 text-dark fw-bold">Edit Tahun Ajaran</h3>
+            </div>
 
-            <tr>
-                <td>Nama Tahun Ajaran</td>
-                <td>:</td>
-                <td>
-                    <input type="text" name="nama"
-                           value="<?php echo $data['nama']; ?>"
-                           required>
-                </td>
-            </tr>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark font-weight-bold"><i class="fas fa-edit me-2"></i> Form Edit Data Tahun Ajaran</h5>
+                </div>
 
-            <tr>
-                <td>Tanggal Mulai</td>
-                <td>:</td>
-                <td>
-                    <input type="date" name="tanggal_mulai"
-                           value="<?php echo $data['tanggal_mulai']; ?>"
-                           required>
-                </td>
-            </tr>
+                <div class="card-body">
 
-            <tr>
-                <td>Tanggal Selesai</td>
-                <td>:</td>
-                <td>
-                    <input type="date" name="tanggal_selesai"
-                           value="<?php echo $data['tanggal_selesai']; ?>"
-                           required>
-                </td>
-            </tr>
+                    <a href="kelola_tahun_ajaran.php" class="btn btn-dark-custom btn-sm mb-4">
+                        <i class="fas fa-arrow-left me-1"></i> Kembali ke Kelola Tahun Ajaran
+                    </a>
 
-            <tr>
-                <td>Status Aktif</td>
-                <td>:</td>
-                <td>
-                    <select name="status_aktif" required>
+                    <form action="proses_edit_tahun_ajaran.php" method="POST">
 
-                        <option value="1"
-                            <?php
-                            if ($data['status_aktif'] == 1) {
-                                echo 'selected';
-                            }
-                            ?>>
-                            Aktif
-                        </option>
+                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($data['id']); ?>">
 
-                        <option value="0"
-                            <?php
-                            if ($data['status_aktif'] == 0) {
-                                echo 'selected';
-                            }
-                            ?>>
-                            Tidak Aktif
-                        </option>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Nama Tahun Ajaran</label>
+                            <input type="text" name="nama"
+                                   class="form-control"
+                                   value="<?php echo htmlspecialchars($data['nama']); ?>"
+                                   required>
+                        </div>
 
-                    </select>
-                </td>
-            </tr>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai"
+                                   class="form-control"
+                                   value="<?php echo htmlspecialchars($data['tanggal_mulai']); ?>"
+                                   required>
+                        </div>
 
-            <tr>
-                <td colspan="3">
-                    <input type="submit" value="Update">
-                </td>
-            </tr>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai"
+                                   class="form-control"
+                                   value="<?php echo htmlspecialchars($data['tanggal_selesai']); ?>"
+                                   required>
+                        </div>
 
-        </table>
+                        <div class="form-group mb-4">
+                            <label class="font-weight-semibold">Status Aktif</label>
+                            <select name="status_aktif" class="form-control" required>
+                                <option value="1" <?php if ($data['status_aktif'] == 1) echo 'selected'; ?>>Aktif</option>
+                                <option value="0" <?php if ($data['status_aktif'] == 0) echo 'selected'; ?>>Tidak Aktif</option>
+                            </select>
+                        </div>
 
-    </form>
+                        <div class="d-flex justify-content-between">
+                            <a href="kelola_tahun_ajaran.php" class="btn btn-secondary px-4">
+                                Batal
+                            </a>
+                            <button type="submit" class="btn btn-dark-custom px-4">
+                                Simpan Perubahan
+                            </button>
+                        </div>
 
-    <p>
-        <a href="kelola_tahun_ajaran.php">
-            Kembali ke Kelola Tahun Ajaran
-        </a>
-    </p>
+                    </form>
+
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

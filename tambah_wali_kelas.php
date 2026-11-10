@@ -1,3 +1,4 @@
+
 <?php
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
@@ -5,14 +6,13 @@ include 'config/koneksi.php';
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Tambah Wali Kelas</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
         * {
@@ -21,180 +21,231 @@ include 'config/koneksi.php';
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 280px;
-            height: 100vh;
-            background: #111827;
+        /* NAVBAR */
+        .navbar-custom {
+            background-color: #343a40;
+            padding: 14px 0;
             color: white;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 35px 25px;
         }
 
-        .sidebar h3 {
-            font-size: 30px;
-            font-weight: bold;
-            margin-bottom: 45px;
+        .navbar-container {
+            max-width: 1140px;
+            margin: auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .sidebar a {
-            display: block;
-            color: #cbd5e1;
+        .brand {
+            color: white;
             text-decoration: none;
-            padding: 16px 18px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            font-size: 17px;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .brand i {
+            margin-right: 10px;
+        }
+
+        .btn-dashboard {
+            color: white;
+            border: 1px solid white;
+            padding: 11px 25px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: 600;
             transition: 0.3s;
         }
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #2563eb;
-            color: white;
+        .btn-dashboard:hover {
+            background-color: white;
+            color: #343a40;
         }
 
-        /* CONTENT */
-        .content {
-            margin-left: 280px;
-            padding: 50px;
-        }
-
-        .header h2 {
-            font-size: 38px;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .header p {
-            color: #64748b;
-            font-size: 18px;
+        /* MAIN CONTENT */
+        .main-content {
+            width: 100%;
+            max-width: 1015px;
+            margin: 45px auto 30px;
+            padding: 0 20px;
+            flex: 1;
         }
 
         /* FORM CARD */
         .form-card {
-            background: white;
-            padding: 50px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
-            max-width: 1100px;
-            width: 100%;
+            background-color: white;
+            border-radius: 13px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
         }
 
-        .form-card h4 {
-            font-size: 28px;
+        .form-header {
+            background-color: #f0f0f0;
+            padding: 24px 30px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .form-header h4 {
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 12px;
-            color: #1e293b;
+            color: #343a40;
+            margin-bottom: 8px;
         }
 
-        .form-card .subtitle {
+        .form-header h4 i {
+            margin-right: 10px;
+        }
+
+        .form-header p {
             color: #64748b;
-            font-size: 17px;
-            margin-bottom: 40px;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        /* FORM BODY */
+        .form-body {
+            padding: 35px;
         }
 
         .form-label {
-            font-weight: 600;
             color: #334155;
-            font-size: 19px;
-            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 11px;
         }
 
         .form-control {
-            padding: 17px 20px;
-            border-radius: 10px;
+            height: 51px;
             border: 1px solid #cbd5e1;
-            font-size: 18px;
-            min-height: 60px;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 15px;
+            color: #334155;
         }
 
         .form-control:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+            border-color: #64748b;
+            box-shadow: 0 0 0 3px rgba(52, 58, 64, 0.10);
         }
 
         /* BUTTON */
-        .btn-simpan {
-            background: #2563eb;
-            color: white;
-            padding: 16px 32px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 18px;
-            transition: 0.3s;
-        }
-
-        .btn-simpan:hover {
-            background: #1d4ed8;
-            color: white;
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #dee2e6;
+            padding-top: 24px;
+            margin-top: 35px;
         }
 
         .btn-kembali {
-            background: #e2e8f0;
-            color: #334155;
-            padding: 16px 32px;
-            border-radius: 10px;
+            background-color: #343a40;
+            color: white;
+            padding: 13px 25px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 18px;
             transition: 0.3s;
         }
 
         .btn-kembali:hover {
-            background: #cbd5e1;
+            background-color: #23272b;
+            color: white;
+        }
+
+        .btn-simpan {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-simpan:hover {
+            background-color: #343a40;
+            color: white;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            padding: 15px;
+            margin-top: auto;
         }
 
         /* RESPONSIVE */
         @media (max-width: 768px) {
-            .sidebar {
+            .navbar-container {
+                padding: 0 15px;
+            }
+
+            .brand {
+                font-size: 16px;
+            }
+
+            .btn-dashboard {
+                padding: 9px 13px;
+                font-size: 13px;
+            }
+
+            .main-content {
+                margin-top: 30px;
+                padding: 0 15px;
+            }
+
+            .form-header {
+                padding: 22px;
+            }
+
+            .form-header h4 {
+                font-size: 21px;
+            }
+
+            .form-body {
+                padding: 23px;
+            }
+
+            .form-footer {
+                gap: 15px;
+            }
+
+            .btn-kembali,
+            .btn-simpan {
+                padding: 12px 17px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .brand {
+                font-size: 14px;
+            }
+
+            .btn-dashboard {
+                padding: 8px 10px;
+            }
+
+            .form-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-kembali,
+            .btn-simpan {
+                text-align: center;
                 width: 100%;
-                height: auto;
-                position: relative;
-                padding: 20px;
-            }
-
-            .sidebar h3 {
-                margin-bottom: 20px;
-            }
-
-            .content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            .header h2 {
-                font-size: 28px;
-            }
-
-            .form-card {
-                padding: 25px;
-            }
-
-            .form-card h4 {
-                font-size: 23px;
-            }
-
-            .form-control {
-                min-height: 55px;
-                font-size: 16px;
-            }
-
-            .form-label {
-                font-size: 17px;
-            }
-
-            .btn-simpan,
-            .btn-kembali {
-                padding: 13px 20px;
-                font-size: 16px;
             }
         }
     </style>
@@ -202,81 +253,115 @@ include 'config/koneksi.php';
 
 <body>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <h3>SIPENSI</h3>
+    <!-- NAVBAR -->
+    <nav class="navbar-custom">
+        <div class="navbar-container">
 
-        <a href="dashboard.php">Dashboard</a>
-        <a href="kelola_siswa.php">Data Siswa</a>
-        <a href="kelola_guru.php">Data Guru</a>
-        <a href="kelola_kelas.php">Data Kelas</a>
-        <a href="kelola_pelanggaran.php">Data Pelanggaran</a>
-        <a href="tahun_ajaran.php">Tahun Ajaran</a>
-        <a href="kelola_wali_kelas.php" class="active">Wali Kelas</a>
-        <a href="logout.php">Logout</a>
-    </div>
+            <a href="dashboard.php" class="brand">
+                <i class="bi bi-mortarboard-fill"></i>
+                Sistem Informasi Pelanggaran Siswa
+            </a>
 
-    <!-- CONTENT -->
-    <div class="content">
+            <a href="dashboard.php" class="btn-dashboard">
+                <i class="bi bi-house-door me-2"></i>
+                Dashboard
+            </a>
 
-        <div class="header mb-5">
-            <h2>Tambah Wali Kelas</h2>
-            <p>Tambahkan data wali kelas baru ke dalam sistem.</p>
         </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
 
         <div class="form-card">
 
-            <h4>Form Data Wali Kelas</h4>
+            <!-- HEADER -->
+            <div class="form-header">
+                <h4>
+                    <i class="bi bi-plus-circle"></i>
+                    Tambah Wali Kelas
+                </h4>
 
-            <p class="subtitle">
-                Silakan lengkapi informasi wali kelas di bawah ini.
-            </p>
+                <p>
+                    Masukkan data wali kelas dengan lengkap dan benar.
+                </p>
+            </div>
 
-            <form action="proses_tambah_wali_kelas.php" method="POST">
+            <!-- FORM -->
+            <div class="form-body">
 
-                <div class="mb-5">
-                    <label class="form-label">ID Guru</label>
-                    <input type="number"
-                           name="id_guru"
-                           class="form-control"
-                           placeholder="Masukkan ID Guru"
-                           required>
-                </div>
+                <form action="proses_tambah_wali_kelas.php" method="POST">
 
-                <div class="mb-5">
-                    <label class="form-label">ID Kelas</label>
-                    <input type="number"
-                           name="id_kelas"
-                           class="form-control"
-                           placeholder="Masukkan ID Kelas"
-                           required>
-                </div>
+                    <div class="row g-4">
 
-                <div class="mb-5">
-                    <label class="form-label">Tahun Ajaran</label>
-                    <input type="text"
-                           name="tahun_ajaran"
-                           class="form-control"
-                           placeholder="Contoh: 2026/2027"
-                           pattern="[0-9]{4}/[0-9]{4}"
-                           required>
-                </div>
+                        <!-- ID GURU -->
+                        <div class="col-md-6">
+                            <label class="form-label">ID Guru</label>
 
-                <div class="d-flex gap-3 mt-4 flex-wrap">
-                    <button type="submit" class="btn-simpan">
-                        Simpan Data
-                    </button>
+                            <input
+                                type="number"
+                                name="id_guru"
+                                class="form-control"
+                                placeholder="Contoh: 101"
+                                required>
+                        </div>
 
-                    <a href="kelola_wali_kelas.php" class="btn-kembali">
-                        Kembali
-                    </a>
-                </div>
+                        <!-- ID KELAS -->
+                        <div class="col-md-6">
+                            <label class="form-label">ID Kelas</label>
 
-            </form>
+                            <input
+                                type="number"
+                                name="id_kelas"
+                                class="form-control"
+                                placeholder="Contoh: 12"
+                                required>
+                        </div>
 
+                        <!-- TAHUN AJARAN -->
+                        <div class="col-md-6">
+                            <label class="form-label">Tahun Ajaran</label>
+
+                            <input
+                                type="text"
+                                name="tahun_ajaran"
+                                class="form-control"
+                                placeholder="Contoh: 2026/2027"
+                                pattern="[0-9]{4}/[0-9]{4}"
+                                title="Gunakan format 2026/2027"
+                                required>
+                        </div>
+
+                    </div>
+
+                    <!-- BUTTON -->
+                    <div class="form-footer">
+
+                        <a href="kelola_wali_kelas.php" class="btn-kembali">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Kembali
+                        </a>
+
+                        <button type="submit" class="btn-simpan">
+                            <i class="bi bi-save me-2"></i>
+                            Simpan Data
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
         </div>
 
-    </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        &copy; 2026 Sistem Informasi Pelanggaran Siswa
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

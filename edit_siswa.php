@@ -1,4 +1,3 @@
-
 <?php
 // edit_siswa.php
 include 'includes/cek_session.php';
@@ -32,122 +31,142 @@ if (!$data) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Siswa</title>
+    <title>Edit Siswa - Sistem Informasi Pelanggaran Siswa</title>
 
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+    <!-- FontAwesome untuk ikon -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f4f6f9;
+        }
+        .container-fluid, .row {
+            height: 100%;
+        }
+        /* Memastikan sidebar memanjang penuh ke bawah */
+        .row > div:first-child {
+            height: 100%;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: bold;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: white;
+        }
+        .btn-dark-custom:hover {
+            background-color: #23272b;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid p-0">
+    <div class="row no-gutters h-100">
 
+        <!-- Sidebar -->
         <?php include 'layout/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 p-4" style="overflow-y: auto; height: 100vh;">
 
-            <h3 class="mb-4">Edit Siswa</h3>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h3 mb-0 text-dark fw-bold">Edit Siswa</h3>
+            </div>
 
-            <div class="card">
-
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Form Edit Data Siswa</h5>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark font-weight-bold"><i class="fas fa-edit me-2"></i> Form Edit Data Siswa</h5>
                 </div>
 
                 <div class="card-body">
 
-                    <a href="kelola_siswa.php"
-                       class="btn btn-secondary btn-sm mb-3">
-                        Kembali ke Kelola Siswa
+                    <a href="kelola_siswa.php" class="btn btn-dark-custom btn-sm mb-4">
+                        <i class="fas fa-arrow-left me-1"></i> Kembali ke Kelola Siswa
                     </a>
 
                     <form action="proses_edit_siswa.php" method="POST">
 
-                        <input type="hidden" name="id"
-                               value="<?= htmlspecialchars($data['id'] ?? ''); ?>">
+                        <input type="hidden" name="id" value="<?= htmlspecialchars($data['id'] ?? ''); ?>">
+                        <input type="hidden" name="nis_lama" value="<?= htmlspecialchars($data['nis']); ?>">
 
-                        <input type="hidden" name="nis_lama"
-                               value="<?= htmlspecialchars($data['nis']); ?>">
-
-                        <div class="form-group">
-                            <label>NIS</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">NIS</label>
                             <input type="text" name="nis"
                                    class="form-control"
                                    value="<?= htmlspecialchars($data['nis']); ?>"
                                    required>
                         </div>
 
-                        <div class="form-group">
-                            <label>NISN</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">NISN</label>
                             <input type="text" name="nisn"
                                    class="form-control"
                                    value="<?= htmlspecialchars($data['nisn']); ?>"
                                    required>
                         </div>
 
-                        <div class="form-group">
-                            <label>Nama Siswa</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Nama Siswa</label>
                             <input type="text" name="nama"
                                    class="form-control"
                                    value="<?= htmlspecialchars($data['nama']); ?>"
                                    required>
                         </div>
 
-                        <div class="form-group">
-                            <label>Jenis Kelamin</label>
-                            <select name="jenis_kelamin"
-                                    class="form-control" required>
-                                <option value="L"
-                                    <?= $data['jenis_kelamin'] == 'L' ? 'selected' : ''; ?>>
-                                    Laki-laki
-                                </option>
-                                <option value="P"
-                                    <?= $data['jenis_kelamin'] == 'P' ? 'selected' : ''; ?>>
-                                    Perempuan
-                                </option>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" class="form-control" required>
+                                <option value="L" <?= $data['jenis_kelamin'] == 'L' ? 'selected' : ''; ?>>Laki-laki</option>
+                                <option value="P" <?= $data['jenis_kelamin'] == 'P' ? 'selected' : ''; ?>>Perempuan</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label>Tanggal Lahir</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Tanggal Lahir</label>
                             <input type="date" name="tanggal_lahir"
                                    class="form-control"
                                    value="<?= htmlspecialchars($data['tanggal_lahir']); ?>"
                                    required>
                         </div>
 
-                        <div class="form-group">
-                            <label>Alamat</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold">Alamat</label>
                             <textarea name="alamat"
                                       class="form-control"
                                       rows="3"
                                       required><?= htmlspecialchars($data['alamat']); ?></textarea>
                         </div>
 
-                        <div class="form-group">
-                            <label>Status Aktif</label>
-                            <select name="status_aktif"
-                                    class="form-control" required>
-                                <option value="1"
-                                    <?= (string)$data['status_aktif'] === '1' ? 'selected' : ''; ?>>
-                                    Aktif
-                                </option>
-                                <option value="0"
-                                    <?= (string)$data['status_aktif'] === '0' ? 'selected' : ''; ?>>
-                                    Tidak Aktif
-                                </option>
+                        <div class="form-group mb-4">
+                            <label class="font-weight-semibold">Status Aktif</label>
+                            <select name="status_aktif" class="form-control" required>
+                                <option value="1" <?= (string)$data['status_aktif'] === '1' ? 'selected' : ''; ?>>Aktif</option>
+                                <option value="0" <?= (string)$data['status_aktif'] === '0' ? 'selected' : ''; ?>>Tidak Aktif</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            Simpan Perubahan
-                        </button>
-
-                        <a href="kelola_siswa.php"
-                           class="btn btn-secondary">
-                            Batal
-                        </a>
+                        <div class="d-flex justify-content-between">
+                            <a href="kelola_siswa.php" class="btn btn-secondary px-4">
+                                Batal
+                            </a>
+                            <button type="submit" class="btn btn-dark-custom px-4">
+                                Simpan Perubahan
+                            </button>
+                        </div>
 
                     </form>
 
@@ -159,6 +178,7 @@ if (!$data) {
     </div>
 </div>
 
+<!-- Bootstrap JavaScript -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.bundle.min.js"></script>
 

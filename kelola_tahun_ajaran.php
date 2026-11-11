@@ -1,4 +1,3 @@
-
 <?php
 // kelola_tahun_ajaran.php
 
@@ -83,17 +82,18 @@ if (!$hasil) {
             padding: 18px;
         }
 
-        /* TOMBOL TAMBAH */
+        /* TOMBOL TAMBAH (DIUBAH MENJADI HITAM) */
         .btn-tambah {
-            background-color: #007bff;
-            border-color: #007bff;
+            background-color: #212529;
+            border-color: #212529;
             color: white;
             font-size: 13px;
             font-weight: 600;
         }
 
         .btn-tambah:hover {
-            background-color: #0069d9;
+            background-color: #000000;
+            border-color: #000000;
             color: white;
         }
 

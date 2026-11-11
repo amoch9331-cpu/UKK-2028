@@ -1,6 +1,7 @@
 
 <?php
 include 'includes/cek_session.php';
+include 'config/koneksi.php';
 ?>
 
 <!DOCTYPE html>
@@ -10,15 +11,11 @@ include 'includes/cek_session.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Tambah Tahun Ajaran</title>
+    <title>Tambah Tahun Ajaran - Sistem Informasi Pelanggaran Siswa</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
         * {
@@ -32,7 +29,6 @@ include 'includes/cek_session.php';
             min-height: 100vh;
         }
 
-        /* NAVBAR */
         .navbar {
             background: #343a40;
             padding: 15px 0;
@@ -44,13 +40,11 @@ include 'includes/cek_session.php';
             font-size: 20px;
         }
 
-        /* CONTAINER */
         .container-form {
             max-width: 1000px;
             margin: 45px auto;
         }
 
-        /* CARD */
         .card {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
@@ -59,7 +53,6 @@ include 'includes/cek_session.php';
             background: white;
         }
 
-        /* HEADER */
         .card-header {
             background: #f1f1f1;
             color: #333;
@@ -78,19 +71,16 @@ include 'includes/cek_session.php';
             margin-bottom: 0;
         }
 
-        /* BODY */
         .card-body {
             padding: 35px;
         }
 
-        /* LABEL */
         .form-label {
             font-weight: 600;
             color: #334155;
             margin-bottom: 10px;
         }
 
-        /* INPUT */
         .form-control,
         .form-select {
             padding: 13px 15px;
@@ -106,7 +96,6 @@ include 'includes/cek_session.php';
             box-shadow: 0 0 0 0.2rem rgba(108,117,125,0.15);
         }
 
-        /* BUTTON */
         .btn {
             padding: 12px 25px;
             border-radius: 8px;
@@ -145,7 +134,6 @@ include 'includes/cek_session.php';
             color: #343a40;
         }
 
-        /* FOOTER */
         footer {
             text-align: center;
             color: #64748b;
@@ -154,7 +142,6 @@ include 'includes/cek_session.php';
             font-size: 14px;
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container-form {
                 margin: 25px 15px;
@@ -179,7 +166,6 @@ include 'includes/cek_session.php';
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg">
-
     <div class="container">
 
         <a class="navbar-brand" href="dashboard.php">
@@ -193,17 +179,14 @@ include 'includes/cek_session.php';
         </a>
 
     </div>
-
 </nav>
 
-<!-- FORM TAMBAH TAHUN AJARAN -->
+<!-- FORM -->
 <div class="container container-form">
 
     <div class="card">
 
-        <!-- HEADER -->
         <div class="card-header">
-
             <h4>
                 <i class="bi bi-calendar-plus me-2"></i>
                 Tambah Tahun Ajaran
@@ -212,13 +195,11 @@ include 'includes/cek_session.php';
             <p>
                 Masukkan data tahun ajaran dengan lengkap dan benar.
             </p>
-
         </div>
 
-        <!-- BODY -->
         <div class="card-body">
 
-            <form action="proses_tambah_tahun_ajaran.php" method="POST">
+            <form action="proses_tambah_tahun_ajaran.php" method="POST" id="formTahunAjaran">
 
                 <div class="row">
 
@@ -234,6 +215,8 @@ include 'includes/cek_session.php';
                                id="nama_tahun_ajaran"
                                name="nama_tahun_ajaran"
                                placeholder="Contoh: 2026/2027"
+                               pattern="[0-9]{4}/[0-9]{4}"
+                               title="Gunakan format 2026/2027"
                                required>
 
                     </div>
@@ -280,8 +263,8 @@ include 'includes/cek_session.php';
                                 name="status_aktif"
                                 required>
 
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
+                            <option value="1">Aktif</option>
+                            <option value="0">Tidak Aktif</option>
 
                         </select>
 
@@ -290,10 +273,10 @@ include 'includes/cek_session.php';
                 </div>
 
                 <!-- TOMBOL -->
-                <div class="d-flex justify-content-between align-items-center
-                            mt-3 pt-4 border-top">
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-4 border-top">
 
-                    <a href="tahun_ajaran.php"
+                    <!-- KEMBALI -->
+                    <a href="kelola_tahun_ajaran.php"
                        class="btn btn-secondary">
 
                         <i class="bi bi-arrow-left me-2"></i>
@@ -301,8 +284,8 @@ include 'includes/cek_session.php';
 
                     </a>
 
-                    <button type="submit"
-                            class="btn btn-primary">
+                    <!-- SIMPAN -->
+                    <button type="submit" class="btn btn-primary">
 
                         <i class="bi bi-save me-2"></i>
                         Simpan Data
@@ -314,15 +297,28 @@ include 'includes/cek_session.php';
             </form>
 
         </div>
-
     </div>
-
 </div>
 
 <!-- FOOTER -->
 <footer>
     &copy; 2026 Sistem Informasi Pelanggaran Siswa
 </footer>
+
+<script>
+    // Validasi tanggal
+    document.getElementById('formTahunAjaran').addEventListener('submit', function(e) {
+
+        const mulai = document.getElementById('tanggal_mulai').value;
+        const selesai = document.getElementById('tanggal_selesai').value;
+
+        if (selesai <= mulai) {
+            e.preventDefault();
+            alert('Tanggal selesai harus setelah tanggal mulai!');
+        }
+
+    });
+</script>
 
 </body>
 </html>

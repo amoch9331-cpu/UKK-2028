@@ -1,18 +1,7 @@
 
 <?php
-// kelola_pelanggaran_kategori.php
-
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
-
-$sql = "SELECT * FROM t_pelanggaran_kategori ORDER BY id DESC";
-$hasil = mysqli_query($koneksi, $sql);
-
-if (!$hasil) {
-    die("Query gagal: " . mysqli_error($koneksi));
-}
-
-$pesan = $_GET['pesan'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -22,215 +11,154 @@ $pesan = $_GET['pesan'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kelola Pelanggaran Kategori</title>
+    <title>Tambah Tahun Ajaran - Sistem Informasi Pelanggaran Siswa</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #f4f5f7;
-            font-family: Arial, sans-serif;
-            color: #212529;
+        * {
+            box-sizing: border-box;
         }
 
-        main {
+        body {
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #333;
             min-height: 100vh;
         }
 
-        .judul-halaman {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 3px;
-            color: #212529;
+        .navbar {
+            background: #343a40;
+            padding: 15px 0;
         }
 
-        .deskripsi-halaman {
-            color: #6c757d;
-            font-size: 14px;
-            margin-bottom: 22px;
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .container-form {
+            max-width: 1000px;
+            margin: 45px auto;
         }
 
         .card {
-            border: none;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            background: white;
         }
 
         .card-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #dee2e6;
-            padding: 16px 20px;
+            background: #f1f1f1;
+            color: #333;
+            padding: 25px 30px;
+            border-bottom: 1px solid #ddd;
         }
 
-        .judul-card {
-            font-size: 18px;
-            font-weight: 700;
+        .card-header h4 {
             margin: 0;
+            font-weight: bold;
+        }
+
+        .card-header p {
+            color: #666;
+            margin-top: 8px;
+            margin-bottom: 0;
         }
 
         .card-body {
-            padding: 18px;
+            padding: 35px;
         }
 
-        .btn-tambah {
-            background-color: #212529;
-            border-color: #212529;
-            color: #ffffff;
-            font-size: 13px;
+        .form-label {
             font-weight: 600;
-        }
-
-        .btn-tambah:hover {
-            background-color: #343a40;
-            color: #ffffff;
-        }
-
-        .btn-kembali {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white;
-            font-size: 13px;
-        }
-
-        .btn-kembali:hover {
-            background-color: #5a6268;
-            color: white;
-        }
-
-        #tabelKategori {
-            width: 100% !important;
-            font-size: 13px;
-        }
-
-        #tabelKategori thead th {
-            background-color: #212529;
-            color: white;
-            font-weight: 700;
-            padding: 15px 10px;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        #tabelKategori tbody td {
-            padding: 13px 10px;
-            vertical-align: middle;
-        }
-
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f1f1;
-        }
-
-        .table-bordered th,
-        .table-bordered td {
-            border: 1px solid #dee2e6;
-        }
-
-        .btn-aksi {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 7px 11px;
-            margin-right: 3px;
-        }
-
-        .btn-edit {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            color: #212529;
-        }
-
-        .btn-edit:hover {
-            background-color: #e0a800;
-            color: #212529;
-        }
-
-        .btn-hapus {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
-        }
-
-        .btn-hapus:hover {
-            background-color: #c82333;
-            color: white;
-        }
-
-        .badge {
-            font-size: 11px;
-            padding: 5px 7px;
-        }
-
-        /* DATATABLES */
-        .dataTables_wrapper {
-            font-size: 13px;
-        }
-
-        .dataTables_wrapper .dataTables_length,
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 13px;
-        }
-
-        /* Kotak pencarian */
-        .dataTables_wrapper .dataTables_filter input {
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 5px 8px;
-            outline: none;
-        }
-
-        /* Kotak jumlah data */
-        .dataTables_wrapper .dataTables_length select {
-            width: 60px !important;
-            height: 34px;
-            padding: 5px 8px;
-            margin: 0 5px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 13px;
-            text-align: center;
-            background-color: #fff;
-            box-sizing: border-box;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        /* Tulisan Tampilkan dan data */
-        .dataTables_wrapper .dataTables_length label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
+            color: #334155;
             margin-bottom: 10px;
         }
 
-        /* Pagination */
-        .dataTables_wrapper .page-item.active .page-link {
-            background-color: #212529;
-            border-color: #212529;
+        .form-control,
+        .form-select {
+            padding: 13px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
         }
 
-        .dataTables_wrapper .page-link {
-            color: #212529;
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108,117,125,0.15);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #565e64;
+            border-color: #565e64;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #343a40;
+            border-color: #343a40;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #23272b;
+            border-color: #23272b;
+            color: white;
+        }
+
+        .btn-outline-light {
+            border-color: white;
+            color: white;
+        }
+
+        .btn-outline-light:hover {
+            background: white;
+            color: #343a40;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 14px;
         }
 
         @media (max-width: 768px) {
-            main {
-                padding: 15px !important;
-            }
-
-            .judul-halaman {
-                font-size: 22px;
+            .container-form {
+                margin: 25px 15px;
             }
 
             .card-body {
-                padding: 12px;
+                padding: 20px;
+            }
+
+            .card-header {
+                padding: 20px;
+            }
+
+            .navbar-brand {
+                font-size: 16px;
             }
         }
     </style>
@@ -238,265 +166,167 @@ $pesan = $_GET['pesan'] ?? '';
 
 <body>
 
-<div class="container-fluid">
-    <div class="row">
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
 
-        <!-- SIDEBAR -->
-        <?php include 'layout/sidebar.php'; ?>
+        <a class="navbar-brand" href="dashboard.php">
+            <i class="bi bi-mortarboard-fill me-2"></i>
+            Sistem Informasi Pelanggaran Siswa
+        </a>
 
-        <!-- KONTEN UTAMA -->
-        <main class="col-md-9 col-lg-10 p-4">
-
-            <!-- JUDUL HALAMAN -->
-            <h3 class="judul-halaman">Kelola Pelanggaran Kategori</h3>
-
-            <p class="deskripsi-halaman">
-                Kelola dan pantau seluruh kategori pelanggaran siswa yang terdaftar dalam sistem.
-            </p>
-
-            <!-- NOTIFIKASI -->
-            <?php if ($pesan == 'hapus_berhasil') { ?>
-
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="bi bi-check-circle-fill mr-2"></i>
-                    Kategori pelanggaran berhasil dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } elseif ($pesan == 'hapus_gagal') { ?>
-
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="bi bi-exclamation-circle-fill mr-2"></i>
-                    Kategori pelanggaran gagal dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } elseif ($pesan == 'data_tidak_ditemukan') { ?>
-
-                <div class="alert alert-warning alert-dismissible fade show">
-                    <i class="bi bi-exclamation-triangle-fill mr-2"></i>
-                    Data kategori pelanggaran tidak ditemukan.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } ?>
-
-            <!-- CARD DATA KATEGORI -->
-            <div class="card">
-
-                <!-- HEADER CARD -->
-                <div class="card-header d-flex justify-content-between align-items-center">
-
-                    <h5 class="judul-card">
-                        <i class="bi bi-exclamation-triangle mr-2"></i>
-                        Data Pelanggaran Kategori
-                    </h5>
-
-                    <a href="tambah_pelanggaran_kategori.php" class="btn btn-tambah btn-sm">
-                        <i class="bi bi-plus-lg mr-1"></i>
-                        Tambah Kategori
-                    </a>
-
-                </div>
-
-                <!-- BODY CARD -->
-                <div class="card-body">
-
-                    <!-- TOMBOL KEMBALI -->
-                    <div class="mb-4">
-                        <a href="dashboard.php" class="btn btn-kembali btn-sm">
-                            <i class="bi bi-arrow-left mr-1"></i>
-                            Kembali ke Dashboard
-                        </a>
-                    </div>
-
-                    <!-- TABEL -->
-                    <div class="table-responsive">
-
-                        <table id="tabelKategori"
-                               class="table table-striped table-bordered table-hover">
-
-                            <thead>
-                                <tr>
-                                    <th>No.</th>
-                                    <th>ID</th>
-                                    <th>Nama Kategori</th>
-                                    <th>Deskripsi</th>
-                                    <th>Status Aktif</th>
-                                    <th>Dibuat</th>
-                                    <th>Diubah</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                <?php
-                                $no = 1;
-
-                                while ($row = mysqli_fetch_assoc($hasil)) {
-                                ?>
-
-                                <tr>
-
-                                    <td><?= $no++; ?></td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['id'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) $row['nama'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['deskripsi'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?php if ((int) $row['status_aktif'] === 1) { ?>
-
-                                            <span class="badge badge-success">
-                                                <i class="bi bi-check-circle-fill mr-1"></i>
-                                                Aktif
-                                            </span>
-
-                                        <?php } else { ?>
-
-                                            <span class="badge badge-danger">
-                                                <i class="bi bi-x-circle-fill mr-1"></i>
-                                                Tidak Aktif
-                                            </span>
-
-                                        <?php } ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['created_at'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['updated_at'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td style="white-space: nowrap;">
-
-                                        <!-- TOMBOL EDIT -->
-                                        <a href="edit_pelanggaran_kategori.php?id=<?= urlencode((string) $row['id']); ?>"
-                                           class="btn btn-edit btn-sm btn-aksi">
-
-                                            <i class="bi bi-pencil-square"></i>
-                                            Edit
-
-                                        </a>
-
-                                        <!-- TOMBOL HAPUS -->
-                                        <a href="hapus_pelanggaran_kategori.php?id=<?= urlencode((string) $row['id']); ?>"
-                                           class="btn btn-hapus btn-sm btn-aksi"
-                                           onclick="return confirm('Yakin ingin menghapus kategori pelanggaran ini?');">
-
-                                            <i class="bi bi-trash"></i>
-                                            Hapus
-
-                                        </a>
-
-                                    </td>
-
-                                </tr>
-
-                                <?php } ?>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-            </div>
-
-        </main>
+        <a href="dashboard.php" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-house-door me-1"></i>
+            Dashboard
+        </a>
 
     </div>
+</nav>
+
+<!-- FORM -->
+<div class="container container-form">
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h4>
+                <i class="bi bi-calendar-plus me-2"></i>
+                Tambah Tahun Ajaran
+            </h4>
+
+            <p>
+                Masukkan data tahun ajaran dengan lengkap dan benar.
+            </p>
+
+        </div>
+
+        <div class="card-body">
+
+            <form action="proses_tambah_tahun_ajaran.php" method="POST">
+
+                <div class="row">
+
+                    <!-- NAMA TAHUN AJARAN -->
+                    <div class="col-md-6 mb-4">
+
+                        <label for="nama_tahun_ajaran" class="form-label">
+                            Nama Tahun Ajaran
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               id="nama_tahun_ajaran"
+                               name="nama_tahun_ajaran"
+                               placeholder="Contoh: 2026/2027"
+                               pattern="[0-9]{4}/[0-9]{4}"
+                               required>
+
+                    </div>
+
+                    <!-- TANGGAL MULAI -->
+                    <div class="col-md-6 mb-4">
+
+                        <label for="tanggal_mulai" class="form-label">
+                            Tanggal Mulai
+                        </label>
+
+                        <input type="date"
+                               class="form-control"
+                               id="tanggal_mulai"
+                               name="tanggal_mulai"
+                               required>
+
+                    </div>
+
+                    <!-- TANGGAL SELESAI -->
+                    <div class="col-md-6 mb-4">
+
+                        <label for="tanggal_selesai" class="form-label">
+                            Tanggal Selesai
+                        </label>
+
+                        <input type="date"
+                               class="form-control"
+                               id="tanggal_selesai"
+                               name="tanggal_selesai"
+                               required>
+
+                    </div>
+
+                    <!-- STATUS AKTIF -->
+                    <div class="col-md-6 mb-4">
+
+                        <label for="status_aktif" class="form-label">
+                            Status Aktif
+                        </label>
+
+                        <select class="form-select"
+                                id="status_aktif"
+                                name="status_aktif"
+                                required>
+
+                            <option value="1">Aktif</option>
+                            <option value="0">Tidak Aktif</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <!-- TOMBOL -->
+                <div class="d-flex justify-content-between align-items-center
+                            mt-3 pt-4 border-top">
+
+                    <!-- KEMBALI -->
+                    <button type="button"
+                            class="btn btn-secondary"
+                            onclick="kembaliHalaman()">
+
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Kembali
+
+                    </button>
+
+                    <!-- SIMPAN -->
+                    <button type="submit" class="btn btn-primary">
+
+                        <i class="bi bi-save me-2"></i>
+                        Simpan Data
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
 </div>
 
-<!-- JAVASCRIPT -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- FOOTER -->
+<footer>
+    &copy; 2026 Sistem Informasi Pelanggaran Siswa
+</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-
-<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
-
-<!-- DATATABLES -->
 <script>
-$(document).ready(function () {
+function kembaliHalaman() {
 
-    $('#tabelKategori').DataTable({
+    if (document.referrer &&
+        new URL(document.referrer).origin === window.location.origin) {
 
-        language: {
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ kategori",
-            infoEmpty: "Tidak ada kategori pelanggaran",
-            infoFiltered: "(difilter dari _MAX_ total data)",
-            zeroRecords: "Kategori pelanggaran tidak ditemukan",
-            emptyTable: "Belum ada data kategori pelanggaran",
+        window.history.back();
 
-            paginate: {
-                first: "Pertama",
-                last: "Terakhir",
-                next: "Berikutnya",
-                previous: "Sebelumnya"
-            }
-        },
+    } else {
 
-        pageLength: 10,
-        lengthMenu: [5, 10, 25, 50, 100],
-        searching: true,
-        ordering: true,
-        paging: true,
-        autoWidth: false,
+        window.location.href = 'dashboard.php';
 
-        columnDefs: [
-            {
-                targets: [0, 7],
-                orderable: false
-            }
-        ],
+    }
 
-        order: [[1, 'desc']]
-
-    });
-
-});
+}
 </script>
 
 </body>

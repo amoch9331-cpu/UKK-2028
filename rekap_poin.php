@@ -1,441 +1,293 @@
 <?php
 // rekap_poin.php
 
-// ============================================
-// 1. KONEKSI DAN SESSION
-// ============================================
-include 'includes/cek_session.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 include 'config/koneksi.php';
+include 'includes/cek_session.php';
 
-// ============================================
-// 2. MENGAMBIL INPUT PENCARIAN DAN FILTER
-// ============================================
-$cari = isset($_GET['cari'])
-    ? trim($_GET['cari'])
-    : '';
+$role = strtolower(trim($_SESSION['role'] ?? ''));
+$current_page = basename($_SERVER['PHP_SELF']);
 
-$kelas_filter = isset($_GET['kelas'])
-    ? trim($_GET['kelas'])
-    : '';
-
-$cari_sql = mysqli_real_escape_string($koneksi, $cari);
-$kelas_sql = mysqli_real_escape_string($koneksi, $kelas_filter);
-
-// ============================================
-// 3. MENGAMBIL DATA KELAS UNTUK FILTER
-// ============================================
-$query_kelas = mysqli_query(
-    $koneksi,
-    "SELECT id, nama
-     FROM t_kelas
-     ORDER BY nama ASC"
-);
-
-if (!$query_kelas) {
-    die("Gagal mengambil data kelas: " . mysqli_error($koneksi));
+function e($value) {
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-$data_kelas = [];
-
-while ($kelas = mysqli_fetch_assoc($query_kelas)) {
-    $data_kelas[] = $kelas;
+$cari = trim($_GET['cari'] ?? '');
+$where = "";
+if ($cari !== '') {
+    $keyword = mysqli_real_escape_string($koneksi, $cari);
+    $where = "WHERE nama_siswa LIKE '%$keyword%' OR nama_kelas LIKE '%$keyword%'";
 }
 
-// ============================================
-// 4. QUERY REKAP POIN SISWA
-// ============================================
-$sql = "SELECT
-            s.id AS siswa_id,
-            s.nis,
-            s.nama AS nama_siswa,
-            COALESCE(k.nama, '-') AS nama_kelas,
-            COALESCE(p.total_poin, 0) AS total_poin,
-            COALESCE(p.jumlah_pelanggaran, 0) AS jumlah_pelanggaran
-        FROM t_siswa s
+$querySiswa = mysqli_query($koneksi, "SELECT COUNT(DISTINCT siswa_id) AS total FROM t_pelanggaran_siswa WHERE siswa_id IS NOT NULL");
+$totalSiswa = (int) mysqli_fetch_assoc($querySiswa)['total'];
 
-        LEFT JOIN (
-            SELECT
-                siswa_id,
-                SUM(poin) AS total_poin,
-                COUNT(*) AS jumlah_pelanggaran
-            FROM t_pelanggaran_siswa
-            GROUP BY siswa_id
-        ) p ON p.siswa_id = s.id
+$queryPelanggaran = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM t_pelanggaran_siswa");
+$totalPelanggaran = (int) mysqli_fetch_assoc($queryPelanggaran)['total'];
 
-        LEFT JOIN (
-            SELECT
-                siswa_id,
-                MAX(kelas_id) AS kelas_id
-            FROM t_kelas_siswa
-            WHERE status_aktif = 1
-            GROUP BY siswa_id
-        ) ks ON ks.siswa_id = s.id
+$queryPoin = mysqli_query($koneksi, "SELECT COALESCE(SUM(poin), 0) AS total FROM t_pelanggaran_siswa");
+$totalPoin = (int) mysqli_fetch_assoc($queryPoin)['total'];
 
-        LEFT JOIN t_kelas k ON k.id = ks.kelas_id
+$query = mysqli_query($koneksi, "
+    SELECT siswa_id, nama_siswa, kelas_id, nama_kelas, COUNT(*) AS jumlah_pelanggaran, SUM(poin) AS total_poin 
+    FROM t_pelanggaran_siswa $where GROUP BY siswa_id, nama_siswa, kelas_id, nama_kelas ORDER BY total_poin DESC, nama_siswa ASC
+");
 
-        WHERE 1=1";
-
-// ============================================
-// 5. PENCARIAN SISWA
-// ============================================
-if ($cari != '') {
-    $sql .= " AND (
-        s.nama LIKE '%$cari_sql%'
-        OR s.nis LIKE '%$cari_sql%'
-    )";
+if (!$query) {
+    die('Query rekap poin gagal: ' . mysqli_error($koneksi));
 }
 
-// ============================================
-// 6. FILTER KELAS
-// ============================================
-if ($kelas_filter != '') {
-    $sql .= " AND k.id = '$kelas_sql'";
-}
-
-// ============================================
-// 7. URUTAN POIN TERTINGGI
-// ============================================
-$sql .= " ORDER BY total_poin DESC, s.nama ASC";
-
-$query_rekap = mysqli_query($koneksi, $sql);
-
-if (!$query_rekap) {
-    die("Gagal mengambil rekap poin: " . mysqli_error($koneksi));
-}
-
-// ============================================
-// 8. MENGHITUNG RINGKASAN
-// ============================================
-$data_rekap = [];
-$total_poin_semua = 0;
-$total_catatan = 0;
-
-while ($data = mysqli_fetch_assoc($query_rekap)) {
-    $data_rekap[] = $data;
-
-    $total_poin_semua += (int) $data['total_poin'];
-    $total_catatan += (int) $data['jumlah_pelanggaran'];
-}
-
-$jumlah_siswa = count($data_rekap);
+$dashboard = ($role === 'guru') ? 'dashboard_guru.php' : 'dashboard.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekap Poin Pelanggaran Siswa</title>
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    <!-- DataTables Bootstrap 5 -->
-    <link href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css"
-          rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .angka {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0d6efd;
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        .sidebar {
+            background-color: #212529;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 100;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+            padding: 0.6rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.5rem;
+        }
+        .breadcrumb-link {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
         @media print {
-            .no-print,
-            .dt-search,
-            .dt-length,
-            .dt-paging,
-            .dt-info {
-                display: none !important;
-            }
-
-            main {
-                width: 100% !important;
-            }
-
-            .card {
-                border: 1px solid #ccc !important;
-                box-shadow: none !important;
-            }
-
-            body {
-                font-size: 12px;
-            }
+            .sidebar, .d-print-none { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
         }
     </style>
 </head>
-
 <body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar p-3">
+            <h5 class="text-white mb-4">PELANGGARAN SISWA</h5>
+            <p class="text-secondary small mb-3">Role: <?= htmlspecialchars(ucfirst($role)) ?></p>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="dashboard.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'dashboard.php') ? 'active' : '' ?>">
+                        <span>📊</span> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="catat_pelanggaran.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'catat_pelanggaran.php') ? 'active' : '' ?>">
+                        <span>📝</span> Catat Pelanggaran
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tindakan.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'tindakan.php') ? 'active' : '' ?>">
+                        <span>⚖️</span> Tindakan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="riwayat.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'riwayat.php') ? 'active' : '' ?>">
+                        <span>🕒</span> Riwayat
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="rekap_poin.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'rekap_poin.php') ? 'active' : '' ?>">
+                        <span>📈</span> Rekap Poin
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="laporan.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'laporan.php') ? 'active' : '' ?>">
+                        <span>📄</span> Laporan
+                    </a>
+                </li>
+                <hr class="text-secondary my-3">
+                <li class="nav-item">
+                    <a href="logout.php" class="nav-link text-danger d-flex align-items-center gap-2">
+                        <span>➡️</span> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
 
-<div class="container-fluid">
-    <div class="row">
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1">
+            <h2 class="mb-1">Rekap Poin Pelanggaran Siswa</h2>
+            <p class="text-muted mb-4">
+                <a href="<?= e($dashboard) ?>" class="breadcrumb-link">Kembali ke Dashboard</a> | Rekap Poin
+            </p>
 
-        <?php include 'layout/sidebar.php'; ?>
-
-        <!-- KONTEN -->
-        <main class="col-md-9 col-lg-10 p-4">
-
-            <div class="container-fluid">
-
-                <!-- JUDUL HALAMAN -->
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-                    <div>
-                        <h2>Rekap Poin Pelanggaran Siswa</h2>
-                        <p class="text-muted mb-0">
-                            Ringkasan jumlah pelanggaran dan poin setiap siswa.
-                        </p>
-                    </div>
-
-                    <div class="d-flex gap-2 no-print">
-                        <a href="dashboard.php" class="btn btn-secondary">
-                            Kembali ke Dashboard
-                        </a>
-
-                        <button type="button"
-                                onclick="window.print()"
-                                class="btn btn-success">
-                            Cetak Rekap
-                        </button>
-                    </div>
-                </div>
-
-                <!-- RINGKASAN -->
-                <div class="row g-3 mb-4">
-
-                    <div class="col-md-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body">
-                                <p class="text-muted mb-1">Jumlah Siswa</p>
-                                <div class="angka">
-                                    <?= $jumlah_siswa; ?>
-                                </div>
+            <!-- Statistik -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white h-100">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase fw-semibold mb-1 opacity-75" style="font-size: 0.8rem;">Total Siswa Melanggar</h6>
+                                <h3 class="fw-bold mb-0"><?= $totalSiswa ?></h3>
                             </div>
+                            <div class="fs-2 opacity-50"><i class="fas fa-users"></i></div>
                         </div>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body">
-                                <p class="text-muted mb-1">Total Poin</p>
-                                <div class="angka">
-                                    <?= $total_poin_semua; ?>
-                                </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-danger text-white h-100">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase fw-semibold mb-1 opacity-75" style="font-size: 0.8rem;">Total Kasus Pelanggaran</h6>
+                                <h3 class="fw-bold mb-0"><?= $totalPelanggaran ?></h3>
                             </div>
+                            <div class="fs-2 opacity-50"><i class="fas fa-exclamation-triangle"></i></div>
                         </div>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body">
-                                <p class="text-muted mb-1">
-                                    Jumlah Catatan Pelanggaran
-                                </p>
-                                <div class="angka">
-                                    <?= $total_catatan; ?>
-                                </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-warning text-dark h-100">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase fw-semibold mb-1 opacity-75" style="font-size: 0.8rem;">Total Seluruh Poin</h6>
+                                <h3 class="fw-bold mb-0"><?= $totalPoin ?></h3>
                             </div>
+                            <div class="fs-2 opacity-50"><i class="fas fa-chart-bar"></i></div>
                         </div>
                     </div>
-
                 </div>
-
-                <!-- PENCARIAN DAN FILTER -->
-                <div class="card shadow-sm mb-4 no-print">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Pencarian dan Filter Siswa</h5>
-                    </div>
-
-                    <div class="card-body">
-                        <form method="GET" action="rekap_poin.php">
-                            <div class="row g-3">
-
-                                <div class="col-md-5">
-                                    <label for="cari" class="form-label">
-                                        Cari Siswa
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="cari"
-                                        id="cari"
-                                        class="form-control"
-                                        placeholder="Masukkan nama atau NIS siswa"
-                                        value="<?= htmlspecialchars($cari); ?>">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="kelas" class="form-label">
-                                        Filter Kelas
-                                    </label>
-
-                                    <select name="kelas" id="kelas"
-                                            class="form-select">
-                                        <option value="">Semua Kelas</option>
-
-                                        <?php foreach ($data_kelas as $kelas) { ?>
-                                            <option
-                                                value="<?= (int) $kelas['id']; ?>"
-                                                <?= $kelas_filter == $kelas['id'] ? 'selected' : ''; ?>>
-                                                <?= htmlspecialchars($kelas['nama']); ?>
-                                            </option>
-                                        <?php } ?>
-
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3 d-flex align-items-end gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        Cari
-                                    </button>
-
-                                    <a href="rekap_poin.php" class="btn btn-secondary">
-                                        Reset
-                                    </a>
-                                </div>
-
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- TABEL REKAP -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Data Rekap Poin Siswa</h5>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="table-responsive">
-
-                            <table id="tabelRekap"
-                                   class="table table-striped table-bordered table-hover align-middle">
-
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>NIS</th>
-                                        <th>Nama Siswa</th>
-                                        <th>Kelas</th>
-                                        <th>Jumlah Pelanggaran</th>
-                                        <th>Total Poin</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <?php foreach ($data_rekap as $data) { ?>
-                                        <tr>
-                                            <!-- Nomor otomatis oleh DataTables -->
-                                            <td></td>
-
-                                            <td>
-                                                <?= htmlspecialchars($data['nis'] ?? '-'); ?>
-                                            </td>
-
-                                            <td>
-                                                <?= htmlspecialchars($data['nama_siswa'] ?? '-'); ?>
-                                            </td>
-
-                                            <td>
-                                                <?= htmlspecialchars($data['nama_kelas'] ?? '-'); ?>
-                                            </td>
-
-                                            <td class="text-center">
-                                                <?= (int) $data['jumlah_pelanggaran']; ?>
-                                            </td>
-
-                                            <td class="text-center">
-                                                <span class="badge bg-warning text-dark">
-                                                    <?= (int) $data['total_poin']; ?> poin
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                        <p class="text-muted mb-0 mt-3">
-                            Total poin dihitung berdasarkan catatan pada
-                            tabel t_pelanggaran_siswa.
-                        </p>
-                    </div>
-                </div>
-
             </div>
 
-        </main>
+            <!-- Pencarian & Filter -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Pencarian Rekap Poin</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-center">
+                        <div class="col-md-9">
+                            <label class="form-label small fw-bold text-muted">Cari Siswa</label>
+                            <input type="text" name="cari" class="form-control" placeholder="Nama siswa atau kelas..." value="<?= e($cari) ?>">
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-50">Cari</button>
+                            <a href="rekap_poin.php" class="btn btn-secondary w-50 text-center">Reset</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabel Data -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Data Rekap Poin Pelanggaran</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center" width="5%">No</th>
+                                    <th>Nama Siswa</th>
+                                    <th>Kelas</th>
+                                    <th class="text-center">Jumlah Pelanggaran</th>
+                                    <th class="text-center">Total Poin</th>
+                                    <th class="text-center">Keterangan</th>
+                                    <th class="text-center d-print-none" width="12%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (mysqli_num_rows($query) > 0): ?>
+                                    <?php $no = 1; ?>
+                                    <?php while ($data = mysqli_fetch_assoc($query)): ?>
+                                        <tr>
+                                            <td class="text-center"><?= $no++ ?></td>
+                                            <td class="fw-semibold"><?= e($data['nama_siswa']) ?></td>
+                                            <td><?= e($data['nama_kelas']) ?></td>
+                                            <td class="text-center"><?= (int)$data['jumlah_pelanggaran'] ?></td>
+                                            <td class="text-center">
+                                                <span class="badge bg-warning text-dark px-2 py-1">
+                                                    <?= (int)$data['total_poin'] ?> Poin
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if ((int)$data['total_poin'] >= 50): ?>
+                                                    <span class="badge bg-danger">Perlu Pembinaan</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success">Terkendali</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center d-print-none">
+                                                <a href="riwayat.php?cari=<?= e($data['nama_siswa']) ?>" class="btn btn-sm btn-dark text-white px-3">
+                                                    Detail
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            Data rekap poin siswa tidak ditemukan.
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Cetak -->
+            <div class="mt-4 d-print-none">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print me-2"></i>Cetak Rekap Poin
+                </button>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
-
-<!-- Inisialisasi DataTables -->
-<script>
-$(document).ready(function () {
-    $('#tabelRekap').DataTable({
-        pageLength: 10,
-        lengthMenu: [5, 10, 25, 50, 100],
-
-        searching: true,
-        ordering: true,
-        paging: true,
-
-        // Total poin tertinggi ditampilkan lebih dahulu
-        order: [[5, 'desc'], [2, 'asc']],
-
-        // Kolom No tidak perlu diurutkan atau dicari
-        columnDefs: [
-            {
-                orderable: false,
-                searchable: false,
-                targets: 0
-            }
-        ],
-
-        // Nomor mengikuti hasil pencarian dan halaman aktif
-        drawCallback: function () {
-            var api = this.api();
-            var nomorAwal = api.page.info().start;
-
-            api.column(0, {
-                search: 'applied',
-                order: 'applied'
-            }).nodes().each(function (cell, i) {
-                cell.innerHTML = nomorAwal + i + 1;
-            });
-        },
-
-        language: {
-            search: "Cari di tabel:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            infoEmpty: "Tidak ada data rekap",
-            infoFiltered: "(difilter dari _MAX_ total data)",
-            zeroRecords: "Data siswa tidak ditemukan",
-            emptyTable: "Belum ada data rekap poin siswa",
-            paginate: {
-                first: "Pertama",
-                last: "Terakhir",
-                next: "Berikutnya",
-                previous: "Sebelumnya"
-            }
-        }
-    });
-});
-</script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -45,16 +45,34 @@ if (!$hasil) {
             background: #f5f6f8;
             font-family: Arial, sans-serif;
             color: #212529;
+            font-size: 13.5px;
+        }
+
+        /* LAYOUT UTAMA */
+        .layout-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            align-items: stretch;
+        }
+
+        .container-fluid {
+            padding: 0 !important;
         }
 
         /* KONTEN UTAMA */
-        main {
+        .dashboard-content {
+            flex: 1;
+            min-width: 0;
             min-height: 100vh;
             padding: 25px !important;
+            background: #f5f6f8;
+            overflow-x: hidden;
         }
 
+        /* JUDUL */
         .judul-halaman {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             margin-bottom: 5px;
             color: #212529;
@@ -62,25 +80,25 @@ if (!$hasil) {
 
         .subjudul {
             color: #64748b;
-            font-size: 15px;
-            margin-bottom: 23px;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
         /* CARD */
         .card {
             border: none;
             border-radius: 12px;
-            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
 
         .card-header {
-            padding: 17px 20px;
+            padding: 16px 20px;
             border-bottom: 1px solid #e9ecef;
         }
 
         .card-header h5 {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
         }
 
@@ -104,10 +122,10 @@ if (!$hasil) {
         }
 
         .btn-aksi {
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 5px;
-            margin: 2px;
-            font-size: 13px;
+            margin: 1px;
+            font-size: 12px;
         }
 
         /* TABLE */
@@ -118,20 +136,20 @@ if (!$hasil) {
         #tabelSiswa {
             width: 100% !important;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         #tabelSiswa thead th {
             background: #212529;
             color: white;
-            padding: 15px 10px;
+            padding: 11px 9px;
             border-color: #343a40;
             white-space: nowrap;
             vertical-align: middle;
         }
 
         #tabelSiswa tbody td {
-            padding: 13px 10px;
+            padding: 9px;
             vertical-align: middle;
             border-color: #dee2e6;
         }
@@ -144,24 +162,28 @@ if (!$hasil) {
         .badge-success {
             background: #28a745;
             padding: 5px 8px;
+            font-size: 11px;
         }
 
         .badge-danger {
             background: #dc3545;
             padding: 5px 8px;
+            font-size: 11px;
         }
 
         /* DATATABLES */
         .dataTables_wrapper {
-            padding-top: 10px;
+            padding-top: 8px;
+            font-size: 13px;
         }
 
         .dataTables_wrapper .dataTables_filter input,
         .dataTables_wrapper .dataTables_length select {
             border: 1px solid #ced4da;
             border-radius: 5px;
-            padding: 5px 9px;
+            padding: 5px 8px;
             outline: none;
+            font-size: 13px;
         }
 
         .dataTables_wrapper .dataTables_filter input:focus {
@@ -176,6 +198,8 @@ if (!$hasil) {
 
         .page-link {
             color: #212529;
+            padding: 6px 11px;
+            font-size: 13px;
         }
 
         .page-link:hover {
@@ -184,42 +208,34 @@ if (!$hasil) {
 
         /* NOTIFIKASI */
         .alert {
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            padding: 12px 15px;
         }
 
         /* RESPONSIVE */
         @media (max-width: 768px) {
-            main {
+
+            .layout-wrapper {
+                flex-direction: column;
+            }
+
+            .dashboard-content {
+                width: 100%;
                 padding: 15px !important;
             }
 
             .judul-halaman {
-                font-size: 23px;
+                font-size: 21px;
             }
 
             .card-body {
-                padding: 15px;
+                padding: 12px;
             }
 
             .card-header {
-                gap: 10px;
                 flex-wrap: wrap;
-            }
-
-            .dataTables_wrapper .dataTables_filter,
-            .dataTables_wrapper .dataTables_length {
-                text-align: left !important;
-                margin-bottom: 12px;
-            }
-
-            #tabelSiswa {
-                font-size: 12px;
-            }
-
-            #tabelSiswa thead th,
-            #tabelSiswa tbody td {
-                padding: 10px 8px;
+                gap: 10px;
             }
         }
     </style>
@@ -228,275 +244,264 @@ if (!$hasil) {
 
 <body>
 
-<div class="container-fluid">
-    <div class="row">
+<div class="layout-wrapper">
 
-        <!-- SIDEBAR -->
-        <?php include 'layout/sidebar.php'; ?>
+    <!-- SIDEBAR -->
+    <?php include 'layout/sidebar.php'; ?>
 
+    <!-- KONTEN UTAMA -->
+    <main class="dashboard-content">
 
-        <!-- KONTEN UTAMA -->
-        <main class="col-md-9 col-lg-10">
+        <!-- JUDUL -->
+        <div class="mb-3">
 
-            <!-- JUDUL -->
-            <div class="mb-4">
+            <h3 class="judul-halaman">
+                <i class="bi bi-people-fill mr-2"></i>
+                Kelola Siswa
+            </h3>
 
-                <h3 class="judul-halaman">
-                    Kelola Siswa
-                </h3>
+            <p class="subjudul">
+                Kelola dan pantau seluruh data siswa yang terdaftar dalam sistem.
+            </p>
 
-                <p class="subjudul">
-                    Kelola dan pantau seluruh data siswa yang terdaftar dalam sistem.
-                </p>
+        </div>
+
+        <!-- NOTIFIKASI -->
+        <?php
+
+        if (isset($_GET['pesan'])) {
+
+            $pesan = $_GET['pesan'];
+
+            if ($pesan == 'hapus_berhasil') {
+                echo '
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle-fill mr-2"></i>
+                    Data siswa berhasil dihapus!
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>';
+
+            } elseif ($pesan == 'hapus_gagal') {
+                echo '
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-circle-fill mr-2"></i>
+                    Data siswa gagal dihapus! Periksa relasi database.
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>';
+
+            } elseif ($pesan == 'data_tidak_ditemukan') {
+                echo '
+                <div class="alert alert-warning alert-dismissible fade show">
+                    Data siswa tidak ditemukan!
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>';
+
+            } elseif ($pesan == 'id_tidak_valid') {
+                echo '
+                <div class="alert alert-warning alert-dismissible fade show">
+                    ID siswa tidak valid!
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>';
+            }
+        }
+
+        ?>
+
+        <!-- CARD DATA SISWA -->
+        <div class="card">
+
+            <!-- HEADER CARD -->
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0">
+                    <i class="bi bi-people-fill mr-2"></i>
+                    Data Siswa
+                </h5>
+
+                <a href="tambah_siswa.php" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg mr-1"></i>
+                    Tambah Siswa
+                </a>
 
             </div>
 
+            <!-- BODY CARD -->
+            <div class="card-body">
 
-            <!-- NOTIFIKASI -->
-            <?php
-            if (isset($_GET['pesan'])) {
+                <!-- TOMBOL KEMBALI -->
+                <div class="mb-3">
 
-                $pesan = $_GET['pesan'];
-
-                if ($pesan == 'hapus_berhasil') {
-                    echo '
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <i class="bi bi-check-circle-fill mr-2"></i>
-                        Data siswa berhasil dihapus!
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>';
-
-                } elseif ($pesan == 'hapus_gagal') {
-                    echo '
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="bi bi-exclamation-circle-fill mr-2"></i>
-                        Data siswa gagal dihapus! Periksa relasi database.
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>';
-
-                } elseif ($pesan == 'data_tidak_ditemukan') {
-                    echo '
-                    <div class="alert alert-warning alert-dismissible fade show">
-                        Data siswa tidak ditemukan!
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>';
-
-                } elseif ($pesan == 'id_tidak_valid') {
-                    echo '
-                    <div class="alert alert-warning alert-dismissible fade show">
-                        ID siswa tidak valid!
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>';
-                }
-            }
-            ?>
-
-
-            <!-- CARD DATA SISWA -->
-            <div class="card">
-
-                <!-- HEADER CARD -->
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-
-                    <h5 class="mb-0">
-                        <i class="bi bi-people-fill mr-2"></i>
-                        Data Siswa
-                    </h5>
-
-                    <a href="tambah_siswa.php"
-                        class="btn btn-primary btn-sm">
-
-                        <i class="bi bi-plus-lg mr-1"></i>
-                        Tambah Siswa
-
+                    <a href="dashboard.php" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left mr-1"></i>
+                        Kembali ke Dashboard
                     </a>
 
                 </div>
 
+                <!-- TABEL SISWA -->
+                <div class="table-responsive">
 
-                <!-- BODY CARD -->
-                <div class="card-body">
+                    <table id="tabelSiswa"
+                        class="table table-striped table-bordered table-hover table-sm">
 
-                    <div class="mb-3">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>NIS</th>
+                                <th>NISN</th>
+                                <th>Nama</th>
+                                <th>Jenis Kelamin</th>
+                                <th>Tanggal Lahir</th>
+                                <th>Alamat</th>
+                                <th>Status Aktif</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
 
-                        <a href="dashboard.php"
-                            class="btn btn-secondary btn-sm">
+                        <tbody>
 
-                            <i class="bi bi-arrow-left mr-1"></i>
-                            Kembali ke Dashboard
+                            <?php
 
-                        </a>
+                            $no = 1;
 
-                    </div>
+                            while ($siswa = mysqli_fetch_assoc($hasil)) {
 
+                                $nis = (string) ($siswa['nis'] ?? '');
+                                $id = (int) ($siswa['id'] ?? 0);
 
-                    <!-- TABEL SISWA -->
-                    <div class="table-responsive">
+                            ?>
 
-                        <table id="tabelSiswa"
-                            class="table table-striped table-bordered table-hover">
+                            <tr>
 
-                            <thead>
-                                <tr>
-                                    <th>No.</th>
-                                    <th>NIS</th>
-                                    <th>NISN</th>
-                                    <th>Nama</th>
-                                    <th>Jenis Kelamin</th>
-                                    <th>Tanggal Lahir</th>
-                                    <th>Alamat</th>
-                                    <th>Status Aktif</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
+                                <td><?= $no++; ?></td>
 
-                            <tbody>
+                                <td>
+                                    <?= htmlspecialchars($nis, ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
 
-                                <?php
-                                $no = 1;
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($siswa['nisn'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
 
-                                while ($siswa = mysqli_fetch_assoc($hasil)) {
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($siswa['nama'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
 
-                                    $nis = (string) ($siswa['nis'] ?? '');
-                                    $id = (int) ($siswa['id'] ?? 0);
-                                ?>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($siswa['jenis_kelamin'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
 
-                                <tr>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($siswa['tanggal_lahir'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
 
-                                    <td><?= $no++; ?></td>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($siswa['alamat'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
 
-                                    <td>
-                                        <?= htmlspecialchars($nis, ENT_QUOTES, 'UTF-8'); ?>
-                                    </td>
+                                <td>
 
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($siswa['nisn'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
+                                    <?php
 
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($siswa['nama'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
+                                    $status = $siswa['status_aktif'] ?? 0;
 
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($siswa['jenis_kelamin'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
+                                    if ((string) $status === '1') {
 
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($siswa['tanggal_lahir'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
+                                    ?>
 
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($siswa['alamat'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
+                                        <span class="badge badge-success">
+                                            Aktif
+                                        </span>
 
-                                    <td>
+                                    <?php } else { ?>
 
-                                        <?php
-                                        $status = $siswa['status_aktif'] ?? 0;
+                                        <span class="badge badge-danger">
+                                            Tidak Aktif
+                                        </span>
 
-                                        if ((string) $status === '1') {
-                                        ?>
+                                    <?php } ?>
 
-                                            <span class="badge badge-success">
-                                                Aktif
-                                            </span>
+                                </td>
 
-                                        <?php } else { ?>
+                                <!-- AKSI -->
+                                <td style="white-space: nowrap;">
 
-                                            <span class="badge badge-danger">
-                                                Tidak Aktif
-                                            </span>
+                                    <!-- EDIT -->
+                                    <a href="edit_siswa.php?nis=<?= urlencode($nis); ?>"
+                                        class="btn btn-warning btn-sm btn-aksi">
 
-                                        <?php } ?>
+                                        <i class="bi bi-pencil-square"></i>
+                                        Edit
 
-                                    </td>
+                                    </a>
 
+                                    <!-- HAPUS -->
+                                    <form action="hapus_siswa.php"
+                                        method="POST"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Apakah kamu yakin ingin menghapus data siswa ini?');">
 
-                                    <!-- AKSI -->
-                                    <td style="white-space: nowrap;">
+                                        <input type="hidden" name="id" value="<?= $id; ?>">
 
-                                        <!-- EDIT -->
-                                        <a href="edit_siswa.php?nis=<?= urlencode($nis); ?>"
-                                            class="btn btn-warning btn-sm btn-aksi">
+                                        <button type="submit"
+                                            class="btn btn-danger btn-sm btn-aksi">
 
-                                            <i class="bi bi-pencil-square"></i>
-                                            Edit
+                                            <i class="bi bi-trash"></i>
+                                            Hapus
 
-                                        </a>
+                                        </button>
 
+                                    </form>
 
-                                        <!-- HAPUS -->
-                                        <form action="hapus_siswa.php"
-                                            method="POST"
-                                            style="display:inline;"
-                                            onsubmit="return confirm('Apakah kamu yakin ingin menghapus data siswa ini?');">
+                                </td>
 
-                                            <input type="hidden"
-                                                name="id"
-                                                value="<?= $id; ?>">
+                            </tr>
 
-                                            <button type="submit"
-                                                class="btn btn-danger btn-sm btn-aksi">
+                            <?php } ?>
 
-                                                <i class="bi bi-trash"></i>
-                                                Hapus
+                        </tbody>
 
-                                            </button>
-
-                                        </form>
-
-                                    </td>
-
-                                </tr>
-
-                                <?php } ?>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
+                    </table>
 
                 </div>
 
             </div>
 
-        </main>
+        </div>
 
-    </div>
+    </main>
+
 </div>
 
-
 <!-- JAVASCRIPT -->
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -504,7 +509,6 @@ if (!$hasil) {
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
-
 
 <!-- DATATABLES -->
 <script>
@@ -530,10 +534,15 @@ $(document).ready(function () {
             emptyTable: "Belum ada data siswa",
 
             paginate: {
+
                 first: "Pertama",
+
                 last: "Terakhir",
+
                 next: "Berikutnya",
+
                 previous: "Sebelumnya"
+
             }
 
         },
@@ -551,10 +560,12 @@ $(document).ready(function () {
         autoWidth: false,
 
         columnDefs: [
+
             {
                 targets: [0, 8],
                 orderable: false
             }
+
         ],
 
         order: [[3, 'asc']]

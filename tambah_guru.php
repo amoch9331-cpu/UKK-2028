@@ -1,3 +1,4 @@
+
 <?php
 // tambah_guru.php
 
@@ -6,6 +7,10 @@ include 'config/koneksi.php';
 
 // Ambil data user dari database
 $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
+
+if (!$query_user) {
+    die("Gagal mengambil data user: " . mysqli_error($koneksi));
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +42,6 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             color: #333;
         }
 
-        /* NAVBAR */
         .navbar {
             background-color: #343a40;
         }
@@ -51,13 +55,11 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             color: #ddd !important;
         }
 
-        /* CONTAINER FORM */
         .container-form {
             max-width: 1100px;
             margin: 40px auto;
         }
 
-        /* CARD */
         .card {
             border: 1px solid #e2e8f0;
             border-radius: 15px;
@@ -66,7 +68,6 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             background: white;
         }
 
-        /* HEADER */
         .card-header {
             background-color: #f1f1f1;
             color: #333;
@@ -87,14 +88,12 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             padding: 35px;
         }
 
-        /* LABEL */
         .form-label {
             font-weight: 600;
             color: #334155;
             margin-bottom: 10px;
         }
 
-        /* INPUT */
         .form-control,
         .form-select {
             padding: 13px 15px;
@@ -111,7 +110,26 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.15);
         }
 
-        /* BUTTON */
+        .password-group {
+            position: relative;
+        }
+
+        .password-group .form-control {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
         .btn {
             padding: 12px 25px;
             border-radius: 8px;
@@ -152,7 +170,6 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             color: #343a40;
         }
 
-        /* FOOTER */
         .footer {
             text-align: center;
             color: #64748b;
@@ -160,7 +177,6 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
             padding: 20px;
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container-form {
                 margin: 25px 15px;
@@ -222,11 +238,11 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
         <!-- FORM -->
         <div class="card-body">
 
-            <form action="proses_tambah_guru.php" method="POST">
+            <form action="proses_tambah_guru.php" method="POST" id="formGuru">
 
                 <div class="row">
 
-                    <!-- NIP (Limit 18 Digit) -->
+                    <!-- NIP -->
                     <div class="col-md-6 mb-3">
 
                         <label for="nip" class="form-label">
@@ -242,6 +258,7 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
                                maxlength="18"
                                pattern="[0-9]{18}"
                                inputmode="numeric"
+                               title="NIP harus terdiri dari 18 angka"
                                required>
 
                     </div>
@@ -275,6 +292,74 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
                                name="email"
                                placeholder="contoh@email.com"
                                required>
+
+                    </div>
+
+                    <!-- PASSWORD -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="password" class="form-label">
+                            Password
+                        </label>
+
+                        <div class="password-group">
+
+                            <input type="password"
+                                   class="form-control"
+                                   id="password"
+                                   name="password"
+                                   placeholder="Masukkan password"
+                                   minlength="6"
+                                   autocomplete="new-password"
+                                   required>
+
+                            <button type="button"
+                                    class="toggle-password"
+                                    onclick="togglePassword('password', 'iconPassword')">
+
+                                <i class="bi bi-eye" id="iconPassword"></i>
+
+                            </button>
+
+                        </div>
+
+                        <small class="text-muted">
+                            Minimal 6 karakter.
+                        </small>
+
+                    </div>
+
+                    <!-- KONFIRMASI PASSWORD -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="konfirmasi_password" class="form-label">
+                            Konfirmasi Password
+                        </label>
+
+                        <div class="password-group">
+
+                            <input type="password"
+                                   class="form-control"
+                                   id="konfirmasi_password"
+                                   name="konfirmasi_password"
+                                   placeholder="Ulangi password"
+                                   minlength="6"
+                                   autocomplete="new-password"
+                                   required>
+
+                            <button type="button"
+                                    class="toggle-password"
+                                    onclick="togglePassword('konfirmasi_password', 'iconKonfirmasi')">
+
+                                <i class="bi bi-eye" id="iconKonfirmasi"></i>
+
+                            </button>
+
+                        </div>
+
+                        <small id="pesanPassword" class="text-muted">
+                            Masukkan ulang password yang sama.
+                        </small>
 
                     </div>
 
@@ -361,6 +446,76 @@ $query_user = mysqli_query($koneksi, "SELECT id FROM t_users ORDER BY id ASC");
 <div class="footer">
     &copy; 2026 Sistem Informasi Pelanggaran Siswa
 </div>
+
+<!-- JAVASCRIPT -->
+<script>
+
+// Tampilkan / sembunyikan password
+function togglePassword(inputId, iconId) {
+
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    if (input.type === "password") {
+
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+
+    } else {
+
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+
+    }
+}
+
+// Validasi password harus sama
+const password = document.getElementById("password");
+const konfirmasi = document.getElementById("konfirmasi_password");
+const pesan = document.getElementById("pesanPassword");
+const form = document.getElementById("formGuru");
+
+function cekPassword() {
+
+    if (konfirmasi.value === "") {
+
+        konfirmasi.setCustomValidity("");
+        pesan.textContent = "Masukkan ulang password yang sama.";
+        pesan.className = "text-muted";
+
+    } else if (password.value !== konfirmasi.value) {
+
+        konfirmasi.setCustomValidity("Password tidak sama!");
+        pesan.textContent = "Password tidak sama!";
+        pesan.className = "text-danger";
+
+    } else {
+
+        konfirmasi.setCustomValidity("");
+        pesan.textContent = "Password cocok!";
+        pesan.className = "text-success";
+
+    }
+
+}
+
+password.addEventListener("input", cekPassword);
+konfirmasi.addEventListener("input", cekPassword);
+
+form.addEventListener("submit", function(event) {
+
+    cekPassword();
+
+    if (!form.checkValidity()) {
+        event.preventDefault();
+        form.reportValidity();
+    }
+
+});
+
+</script>
 
 </body>
 </html>

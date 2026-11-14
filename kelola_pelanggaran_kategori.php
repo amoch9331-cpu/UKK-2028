@@ -1,332 +1,585 @@
 
 <?php
+// kelola_pelanggaran.php
+
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
+
+// =====================================
+// AMBIL DATA PELANGGARAN
+// =====================================
+
+$sql = "SELECT
+            p.id,
+            p.nama,
+            p.poin,
+            p.pelanggaran_kategori_id,
+            k.nama AS nama_kategori
+        FROM t_pelanggaran p
+        LEFT JOIN t_pelanggaran_kategori k
+            ON p.pelanggaran_kategori_id = k.id
+        ORDER BY p.id DESC";
+
+$hasil = mysqli_query($koneksi, $sql);
+
+if (!$hasil) {
+    die("Query gagal: " . mysqli_error($koneksi));
+}
+
+$pesan = $_GET['pesan'] ?? '';
+
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Tambah Tahun Ajaran - Sistem Informasi Pelanggaran Siswa</title>
+    <title>Kelola Pelanggaran - SIPENSIS</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- DATATABLES -->
+    <link rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
-            background: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            background: #f4f5f7;
             font-family: Arial, sans-serif;
-            color: #333;
+            color: #212529;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
             min-height: 100vh;
+            background: #1a1d20;
+            z-index: 1000;
+            overflow-y: auto;
         }
 
-        .navbar {
-            background: #343a40;
-            padding: 15px 0;
+        /* KONTEN UTAMA */
+
+        .container-fluid {
+            padding: 0;
         }
 
-        .navbar-brand {
-            color: white !important;
-            font-weight: bold;
-            font-size: 20px;
+        .row {
+            display: block;
+            margin: 0;
         }
 
-        .container-form {
-            max-width: 1000px;
-            margin: 45px auto;
+        main {
+            display: block;
+            margin-left: 260px !important;
+            width: calc(100% - 260px) !important;
+            max-width: none !important;
+            min-height: 100vh;
+            padding: 15px 25px 25px !important;
+            background: #f4f5f7;
         }
+
+        /* JUDUL */
+
+        .judul-halaman {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 18px;
+            color: #212529;
+        }
+
+        /* CARD */
 
         .card {
-            border: 1px solid #e2e8f0;
+            width: 100%;
+            border: none;
             border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             overflow: hidden;
             background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
         }
 
         .card-header {
-            background: #f1f1f1;
-            color: #333;
-            padding: 25px 30px;
-            border-bottom: 1px solid #ddd;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 16px 20px;
         }
 
-        .card-header h4 {
+        .judul-card {
+            font-size: 18px;
+            font-weight: 700;
             margin: 0;
-            font-weight: bold;
-        }
-
-        .card-header p {
-            color: #666;
-            margin-top: 8px;
-            margin-bottom: 0;
+            color: #212529;
         }
 
         .card-body {
-            padding: 35px;
+            padding: 18px;
         }
 
-        .form-label {
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 10px;
-        }
+        /* TOMBOL */
 
-        .form-control,
-        .form-select {
-            padding: 13px 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            background: white;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #6c757d;
-            box-shadow: 0 0 0 0.2rem rgba(108,117,125,0.15);
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border-radius: 8px;
+        .btn-tambah {
+            background: #212529;
+            border-color: #212529;
+            color: white;
+            font-size: 13px;
             font-weight: 600;
         }
 
-        .btn-primary {
+        .btn-tambah:hover {
+            background: #000;
+            color: white;
+        }
+
+        .btn-kembali {
             background: #6c757d;
             border-color: #6c757d;
             color: white;
+            font-size: 13px;
         }
 
-        .btn-primary:hover {
-            background: #565e64;
-            border-color: #565e64;
+        .btn-kembali:hover {
+            background: #545b62;
             color: white;
         }
 
-        .btn-secondary {
-            background: #343a40;
-            border-color: #343a40;
+        .btn-edit {
+            background: #ffc107;
+            border-color: #ffc107;
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #23272b;
-            border-color: #23272b;
+        .btn-hapus {
+            background: #dc3545;
+            border-color: #dc3545;
             color: white;
         }
 
-        .btn-outline-light {
-            border-color: white;
+        .btn-aksi {
+            font-size: 12px;
+            padding: 7px 10px;
+            margin-right: 3px;
+        }
+
+        /* TABEL */
+
+        #tabelPelanggaran {
+            width: 100% !important;
+            font-size: 13px;
+        }
+
+        #tabelPelanggaran thead th {
+            background: #212529;
+            color: white;
+            font-weight: 700;
+            padding: 13px 10px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        #tabelPelanggaran tbody td {
+            padding: 13px 10px;
+            vertical-align: middle;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background: #f1f1f1;
+        }
+
+        /* DATATABLES */
+
+        .dataTables_wrapper {
+            font-size: 13px;
+            padding-top: 5px;
+        }
+
+        /* BARIS PENCARIAN */
+
+        .dataTables_wrapper > .row:first-child {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .dataTables_wrapper > .row:first-child > div {
+            width: 100%;
+            max-width: 100%;
+            flex: 0 0 100%;
+            text-align: left !important;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            float: left !important;
+            text-align: left !important;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start !important;
+            gap: 5px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        .dataTables_wrapper .dataTables_length label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            width: 65px;
+            height: 34px;
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin: 0 3px;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            width: 180px;
+            height: 34px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 5px 8px;
+            outline: none;
+            margin-left: 3px;
+        }
+
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,.15);
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 10px;
+        }
+
+        .dataTables_wrapper .page-item.active .page-link {
+            background: #212529;
+            border-color: #212529;
             color: white;
         }
 
-        .btn-outline-light:hover {
-            background: white;
-            color: #343a40;
+        .dataTables_wrapper .page-link {
+            color: #212529;
+            font-size: 13px;
         }
 
-        footer {
-            text-align: center;
-            color: #64748b;
-            padding: 20px;
-            margin-top: 40px;
-            font-size: 14px;
+        .badge {
+            font-size: 11px;
+            padding: 6px 8px;
         }
 
-        @media (max-width: 768px) {
-            .container-form {
-                margin: 25px 15px;
+        /* RESPONSIVE */
+
+        @media(max-width:768px) {
+
+            #sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 15px !important;
+            }
+
+            .judul-halaman {
+                font-size: 22px;
             }
 
             .card-body {
-                padding: 20px;
+                padding: 12px;
             }
 
             .card-header {
-                padding: 20px;
+                padding: 12px;
             }
 
-            .navbar-brand {
-                font-size: 16px;
+            .dataTables_wrapper .dataTables_filter input {
+                width: 140px;
             }
         }
+
     </style>
+
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg">
-    <div class="container">
+<div class="container-fluid">
 
-        <a class="navbar-brand" href="dashboard.php">
-            <i class="bi bi-mortarboard-fill me-2"></i>
-            Sistem Informasi Pelanggaran Siswa
-        </a>
+    <div class="row">
 
-        <a href="dashboard.php" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-house-door me-1"></i>
-            Dashboard
-        </a>
+        <!-- SIDEBAR -->
+        <?php include 'layout/sidebar.php'; ?>
 
-    </div>
-</nav>
+        <!-- KONTEN UTAMA -->
+        <main>
 
-<!-- FORM -->
-<div class="container container-form">
+            <h3 class="judul-halaman">
+                <i class="bi bi-exclamation-triangle mr-2"></i>
+                Kelola Pelanggaran
+            </h3>
 
-    <div class="card">
+            <!-- NOTIFIKASI -->
 
-        <div class="card-header">
+            <?php if ($pesan == 'hapus_berhasil') { ?>
 
-            <h4>
-                <i class="bi bi-calendar-plus me-2"></i>
-                Tambah Tahun Ajaran
-            </h4>
+                <div class="alert alert-success alert-dismissible fade show">
+                    Data pelanggaran berhasil dihapus.
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
 
-            <p>
-                Masukkan data tahun ajaran dengan lengkap dan benar.
-            </p>
+            <?php } elseif ($pesan == 'hapus_gagal') { ?>
 
-        </div>
+                <div class="alert alert-danger alert-dismissible fade show">
+                    Data pelanggaran gagal dihapus.
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
 
-        <div class="card-body">
+            <?php } ?>
 
-            <form action="proses_tambah_tahun_ajaran.php" method="POST">
+            <!-- CARD DATA PELANGGARAN -->
 
-                <div class="row">
+            <div class="card">
 
-                    <!-- NAMA TAHUN AJARAN -->
-                    <div class="col-md-6 mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
 
-                        <label for="nama_tahun_ajaran" class="form-label">
-                            Nama Tahun Ajaran
-                        </label>
+                    <h5 class="judul-card">
+                        <i class="bi bi-exclamation-triangle-fill mr-2"></i>
+                        Data Pelanggaran
+                    </h5>
 
-                        <input type="text"
-                               class="form-control"
-                               id="nama_tahun_ajaran"
-                               name="nama_tahun_ajaran"
-                               placeholder="Contoh: 2026/2027"
-                               pattern="[0-9]{4}/[0-9]{4}"
-                               required>
+                    <a href="tambah_pelanggaran.php"
+                       class="btn btn-tambah btn-sm">
 
-                    </div>
+                        <i class="bi bi-plus-lg mr-1"></i>
+                        Tambah Pelanggaran
 
-                    <!-- TANGGAL MULAI -->
-                    <div class="col-md-6 mb-4">
-
-                        <label for="tanggal_mulai" class="form-label">
-                            Tanggal Mulai
-                        </label>
-
-                        <input type="date"
-                               class="form-control"
-                               id="tanggal_mulai"
-                               name="tanggal_mulai"
-                               required>
-
-                    </div>
-
-                    <!-- TANGGAL SELESAI -->
-                    <div class="col-md-6 mb-4">
-
-                        <label for="tanggal_selesai" class="form-label">
-                            Tanggal Selesai
-                        </label>
-
-                        <input type="date"
-                               class="form-control"
-                               id="tanggal_selesai"
-                               name="tanggal_selesai"
-                               required>
-
-                    </div>
-
-                    <!-- STATUS AKTIF -->
-                    <div class="col-md-6 mb-4">
-
-                        <label for="status_aktif" class="form-label">
-                            Status Aktif
-                        </label>
-
-                        <select class="form-select"
-                                id="status_aktif"
-                                name="status_aktif"
-                                required>
-
-                            <option value="1">Aktif</option>
-                            <option value="0">Tidak Aktif</option>
-
-                        </select>
-
-                    </div>
+                    </a>
 
                 </div>
 
-                <!-- TOMBOL -->
-                <div class="d-flex justify-content-between align-items-center
-                            mt-3 pt-4 border-top">
+                <div class="card-body">
 
                     <!-- KEMBALI -->
-                    <button type="button"
-                            class="btn btn-secondary"
-                            onclick="kembaliHalaman()">
 
-                        <i class="bi bi-arrow-left me-2"></i>
-                        Kembali
+                    <div class="mb-4">
 
-                    </button>
+                        <a href="dashboard.php"
+                           class="btn btn-kembali btn-sm">
 
-                    <!-- SIMPAN -->
-                    <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-arrow-left mr-1"></i>
+                            Kembali ke Dashboard
 
-                        <i class="bi bi-save me-2"></i>
-                        Simpan Data
+                        </a>
 
-                    </button>
+                    </div>
+
+                    <!-- TABEL -->
+
+                    <div class="table-responsive">
+
+                        <table id="tabelPelanggaran"
+                               class="table table-striped table-bordered table-hover">
+
+                            <thead>
+
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Nama Pelanggaran</th>
+                                    <th>Kategori</th>
+                                    <th>Poin</th>
+                                    <th>Aksi</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <?php
+                                $no = 1;
+
+                                while ($row = mysqli_fetch_assoc($hasil)) {
+                                ?>
+
+                                <tr>
+
+                                    <td><?= $no++; ?></td>
+
+                                    <td>
+                                        <strong>
+                                            <?= htmlspecialchars(
+                                                (string)$row['nama'],
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ); ?>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            (string)($row['nama_kategori'] ?? '-'),
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ); ?>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge badge-warning">
+                                            <?= (int)$row['poin']; ?> Poin
+                                        </span>
+                                    </td>
+
+                                    <td style="white-space:nowrap;">
+
+                                        <a href="edit_pelanggaran.php?id=<?= (int)$row['id']; ?>"
+                                           class="btn btn-edit btn-sm btn-aksi"
+                                           title="Edit">
+
+                                            <i class="bi bi-pencil-square"></i>
+
+                                        </a>
+
+                                        <a href="hapus_pelanggaran.php?id=<?= (int)$row['id']; ?>"
+                                           class="btn btn-hapus btn-sm btn-aksi"
+                                           title="Hapus"
+                                           onclick="return confirm('Yakin ingin menghapus pelanggaran ini?');">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                                <?php } ?>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
 
                 </div>
 
-            </form>
+            </div>
 
-        </div>
+        </main>
 
     </div>
 
 </div>
 
-<!-- FOOTER -->
-<footer>
-    &copy; 2026 Sistem Informasi Pelanggaran Siswa
-</footer>
+<!-- JAVASCRIPT -->
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
-function kembaliHalaman() {
 
-    if (document.referrer &&
-        new URL(document.referrer).origin === window.location.origin) {
+$(document).ready(function () {
 
-        window.history.back();
+    $('#tabelPelanggaran').DataTable({
 
-    } else {
+        language: {
 
-        window.location.href = 'dashboard.php';
+            search: "Cari:",
 
-    }
+            lengthMenu: "Tampilkan _MENU_ data",
 
-}
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data pelanggaran",
+
+            infoEmpty: "Tidak ada data pelanggaran",
+
+            infoFiltered: "(difilter dari _MAX_ total data)",
+
+            zeroRecords: "Data pelanggaran tidak ditemukan",
+
+            emptyTable: "Belum ada data pelanggaran",
+
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Berikutnya",
+                previous: "Sebelumnya"
+            }
+
+        },
+
+        pageLength: 10,
+
+        lengthMenu: [5, 10, 25, 50, 100],
+
+        searching: true,
+
+        ordering: true,
+
+        paging: true,
+
+        autoWidth: false,
+
+        columnDefs: [
+            {
+                targets: [0, 4],
+                orderable: false
+            }
+        ],
+
+        order: [[0, 'asc']]
+
+    });
+
+});
+
 </script>
 
 </body>

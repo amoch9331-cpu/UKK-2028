@@ -1,8 +1,13 @@
+
 <?php
 // kelola_tahun_ajaran.php
 
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
+
+// =====================================
+// AMBIL DATA TAHUN AJARAN
+// =====================================
 
 $sql = "SELECT * FROM t_tahun_ajaran ORDER BY tanggal_mulai DESC";
 $hasil = mysqli_query($koneksi, $sql);
@@ -10,54 +15,109 @@ $hasil = mysqli_query($koneksi, $sql);
 if (!$hasil) {
     die("Query gagal: " . mysqli_error($koneksi));
 }
+
+$pesan = $_GET['pesan'] ?? '';
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kelola Tahun Ajaran</title>
+    <title>Kelola Tahun Ajaran - SIPENSIS</title>
 
-    <!-- Bootstrap CSS -->
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 
-    <!-- Bootstrap Icons -->
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- DataTables CSS -->
+    <!-- DATATABLES -->
     <link rel="stylesheet"
           href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
+            padding: 0;
             background-color: #f4f5f7;
             font-family: Arial, sans-serif;
             color: #212529;
+            overflow-x: hidden;
+        }
+
+        /* =================================
+           SIDEBAR
+        ================================= */
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            min-height: 100vh;
+            background-color: #1a1d20;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        /* =================================
+           KONTEN UTAMA
+        ================================= */
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .row {
+            display: block;
+            margin: 0;
         }
 
         main {
+            display: block;
+            margin-left: 260px !important;
+            width: calc(100% - 260px) !important;
+            max-width: none !important;
             min-height: 100vh;
+            padding: 15px 25px 25px !important;
+            background-color: #f4f5f7;
         }
 
-        /* JUDUL HALAMAN */
+        /* =================================
+           JUDUL
+        ================================= */
+
         .judul-halaman {
             font-size: 26px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-top: 0;
+            margin-bottom: 18px;
             color: #212529;
         }
 
-        /* CARD */
+        /* =================================
+           CARD
+        ================================= */
+
         .card {
+            width: 100%;
             border: none;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background-color: #ffffff;
         }
 
         .card-header {
@@ -82,7 +142,10 @@ if (!$hasil) {
             padding: 18px;
         }
 
-        /* TOMBOL TAMBAH (DIUBAH MENJADI HITAM) */
+        /* =================================
+           TOMBOL TAMBAH
+        ================================= */
+
         .btn-tambah {
             background-color: #212529;
             border-color: #212529;
@@ -97,7 +160,10 @@ if (!$hasil) {
             color: white;
         }
 
-        /* TOMBOL KEMBALI */
+        /* =================================
+           TOMBOL KEMBALI
+        ================================= */
+
         .btn-kembali {
             background-color: #6c757d;
             border-color: #6c757d;
@@ -110,7 +176,10 @@ if (!$hasil) {
             color: white;
         }
 
-        /* TABEL */
+        /* =================================
+           TABEL
+        ================================= */
+
         #tabelTahunAjaran {
             width: 100% !important;
             font-size: 13px;
@@ -139,7 +208,10 @@ if (!$hasil) {
             border: 1px solid #dee2e6;
         }
 
-        /* TOMBOL AKSI */
+        /* =================================
+           TOMBOL AKSI
+        ================================= */
+
         .btn-aksi {
             font-size: 12px;
             font-weight: 600;
@@ -174,7 +246,10 @@ if (!$hasil) {
             padding: 5px 7px;
         }
 
-        /* DATATABLES */
+        /* =================================
+           DATATABLES
+        ================================= */
+
         .dataTables_wrapper {
             font-size: 13px;
             padding-top: 5px;
@@ -185,7 +260,6 @@ if (!$hasil) {
             margin-bottom: 13px;
         }
 
-        /* LABEL TAMPILKAN */
         .dataTables_wrapper .dataTables_length label {
             display: flex;
             align-items: center;
@@ -195,7 +269,6 @@ if (!$hasil) {
             font-weight: 400;
         }
 
-        /* KOTAK ANGKA JUMLAH DATA */
         .dataTables_wrapper .dataTables_length select {
             width: 64px !important;
             height: 34px !important;
@@ -207,15 +280,18 @@ if (!$hasil) {
             font-size: 13px !important;
             text-align: center;
             cursor: pointer;
-            box-sizing: border-box;
-            display: inline-block;
         }
 
-        /* KOTAK PENCARIAN */
+        /* PERUBAHAN: CARI DIPINDAHKAN KE KIRI */
+        .dataTables_wrapper .dataTables_filter {
+            float: left !important;
+            text-align: left !important;
+        }
+
         .dataTables_wrapper .dataTables_filter label {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: flex-start;
             gap: 5px;
             white-space: nowrap;
             font-weight: 400;
@@ -237,26 +313,35 @@ if (!$hasil) {
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
         }
 
-        /* INFORMASI JUMLAH DATA */
         .dataTables_wrapper .dataTables_info {
             padding-top: 10px;
         }
 
-        /* PAGINATION */
         .dataTables_wrapper .page-item.active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
+            background-color: #212529;
+            border-color: #212529;
             color: white;
         }
 
         .dataTables_wrapper .page-link {
-            color: #007bff;
+            color: #212529;
             font-size: 13px;
         }
 
-        /* RESPONSIVE */
+        /* =================================
+           RESPONSIVE
+        ================================= */
+
         @media (max-width: 768px) {
+
+            #sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
             main {
+                margin-left: 0 !important;
+                width: 100% !important;
                 padding: 15px !important;
             }
 
@@ -279,57 +364,76 @@ if (!$hasil) {
             .dataTables_wrapper .dataTables_filter input {
                 width: 130px;
             }
+
         }
+
     </style>
+
 </head>
 
 <body>
 
 <div class="container-fluid">
+
     <div class="row">
 
         <!-- SIDEBAR -->
         <?php include 'layout/sidebar.php'; ?>
 
         <!-- KONTEN UTAMA -->
-        <main class="col-md-9 col-lg-10 p-4">
+        <main>
+
+            <!-- JUDUL HALAMAN -->
 
             <h3 class="judul-halaman">
                 Kelola Tahun Ajaran
             </h3>
 
             <!-- NOTIFIKASI -->
-            <?php
-            $pesan = $_GET['pesan'] ?? '';
 
-            if ($pesan == 'hapus_berhasil') {
-            ?>
+            <?php if ($pesan == 'hapus_berhasil') { ?>
+
                 <div class="alert alert-success alert-dismissible fade show">
+
                     Data tahun ajaran berhasil dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
+
+                    <button type="button"
+                            class="close"
+                            data-dismiss="alert">
                         <span>&times;</span>
                     </button>
+
                 </div>
-            <?php
-            } elseif ($pesan == 'hapus_gagal') {
-            ?>
+
+            <?php } elseif ($pesan == 'hapus_gagal') { ?>
+
                 <div class="alert alert-danger alert-dismissible fade show">
+
                     Data tahun ajaran gagal dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
+
+                    <button type="button"
+                            class="close"
+                            data-dismiss="alert">
                         <span>&times;</span>
                     </button>
+
                 </div>
+
             <?php } ?>
 
             <!-- CARD DATA TAHUN AJARAN -->
+
             <div class="card">
 
                 <!-- HEADER CARD -->
+
                 <div class="card-header d-flex justify-content-between align-items-center">
 
                     <h5 class="judul-card">
+
                         <i class="bi bi-calendar3"></i>
                         Data Tahun Ajaran
+
                     </h5>
 
                     <a href="tambah_tahun_ajaran.php"
@@ -343,9 +447,11 @@ if (!$hasil) {
                 </div>
 
                 <!-- BODY CARD -->
+
                 <div class="card-body">
 
                     <!-- TOMBOL KEMBALI -->
+
                     <div class="mb-4">
 
                         <a href="dashboard.php"
@@ -359,12 +465,14 @@ if (!$hasil) {
                     </div>
 
                     <!-- TABEL -->
+
                     <div class="table-responsive">
 
                         <table id="tabelTahunAjaran"
                                class="table table-striped table-bordered table-hover">
 
                             <thead>
+
                                 <tr>
                                     <th>No.</th>
                                     <th>ID</th>
@@ -376,6 +484,7 @@ if (!$hasil) {
                                     <th>Diubah</th>
                                     <th>Aksi</th>
                                 </tr>
+
                             </thead>
 
                             <tbody>
@@ -423,6 +532,7 @@ if (!$hasil) {
                                     </td>
 
                                     <td>
+
                                         <?php if ((int) $row['status_aktif'] === 1) { ?>
 
                                             <span class="badge badge-success">
@@ -436,6 +546,7 @@ if (!$hasil) {
                                             </span>
 
                                         <?php } ?>
+
                                     </td>
 
                                     <td>
@@ -456,7 +567,8 @@ if (!$hasil) {
 
                                     <td style="white-space: nowrap;">
 
-                                        <!-- TOMBOL EDIT -->
+                                        <!-- EDIT -->
+
                                         <a href="edit_tahun_ajaran.php?id=<?= urlencode((string) $row['id']); ?>"
                                            class="btn btn-edit btn-sm btn-aksi">
 
@@ -465,7 +577,8 @@ if (!$hasil) {
 
                                         </a>
 
-                                        <!-- TOMBOL HAPUS -->
+                                        <!-- HAPUS -->
+
                                         <a href="hapus_tahun_ajaran.php?id=<?= urlencode((string) $row['id']); ?>"
                                            class="btn btn-hapus btn-sm btn-aksi"
                                            onclick="return confirm('Yakin ingin menghapus data tahun ajaran ini?');">
@@ -488,14 +601,17 @@ if (!$hasil) {
                     </div>
 
                 </div>
+
             </div>
 
         </main>
 
     </div>
+
 </div>
 
 <!-- JAVASCRIPT -->
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -505,18 +621,27 @@ if (!$hasil) {
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- DATATABLES -->
+
 <script>
+
 $(document).ready(function () {
 
     $('#tabelTahunAjaran').DataTable({
 
         language: {
+
             search: "Cari:",
+
             lengthMenu: "Tampilkan _MENU_ data",
+
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data tahun ajaran",
+
             infoEmpty: "Tidak ada data tahun ajaran",
+
             infoFiltered: "(difilter dari _MAX_ total data)",
+
             zeroRecords: "Data tahun ajaran tidak ditemukan",
+
             emptyTable: "Belum ada data tahun ajaran",
 
             paginate: {
@@ -525,6 +650,7 @@ $(document).ready(function () {
                 next: "Berikutnya",
                 previous: "Sebelumnya"
             }
+
         },
 
         pageLength: 10,
@@ -551,6 +677,7 @@ $(document).ready(function () {
     });
 
 });
+
 </script>
 
 </body>

@@ -5,6 +5,7 @@
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
 
+// AMBIL DATA KELAS
 $sql = "SELECT * FROM t_kelas ORDER BY nama ASC";
 $hasil = mysqli_query($koneksi, $sql);
 
@@ -22,251 +23,341 @@ $pesan = $_GET['pesan'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kelola Kelas</title>
+    <title>Kelola Kelas - SIPENSIS</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            background: #f4f5f7;
             font-family: Arial, sans-serif;
             color: #212529;
+            font-size: 13px;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            min-height: 100vh;
+            background: #1a1d20;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        /* KONTEN UTAMA */
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .row {
+            display: block;
+            margin: 0;
         }
 
         main {
+            display: block;
+            margin-left: 260px !important;
+            width: calc(100% - 260px) !important;
+            max-width: none !important;
             min-height: 100vh;
+            padding: 15px 25px 25px !important;
+            background: #f4f5f7;
         }
+
+        /* JUDUL HALAMAN */
 
         .judul-halaman {
             font-size: 26px;
             font-weight: 700;
-            margin-bottom: 3px;
+            margin: 0 0 5px;
             color: #212529;
         }
 
         .deskripsi-halaman {
-            color: #6c757d;
+            color: #64748b;
             font-size: 14px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
+        /* CARD */
+
         .card {
+            width: 100%;
             border: none;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .card-header {
-            background-color: #ffffff;
+            background: white;
             border-bottom: 1px solid #dee2e6;
             padding: 16px 20px;
         }
 
         .judul-card {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             margin: 0;
+            color: #212529;
         }
 
         .card-body {
-            padding: 18px;
+            padding: 20px;
         }
 
+        /* TOMBOL */
+
         .btn-tambah {
-            background-color: #212529;
-            border-color: #212529;
-            color: #ffffff;
+            background: #212529;
+            border: 1px solid #212529;
+            color: white;
             font-size: 13px;
             font-weight: 600;
         }
 
         .btn-tambah:hover {
-            background-color: #343a40;
-            color: #ffffff;
+            background: #000;
+            color: white;
         }
 
         .btn-kembali {
-            background-color: #6c757d;
+            background: #6c757d;
             border-color: #6c757d;
             color: white;
             font-size: 13px;
         }
 
         .btn-kembali:hover {
-            background-color: #5a6268;
+            background: #545b62;
             color: white;
-        }
-
-        #tabelKelas {
-            width: 100% !important;
-            font-size: 13px;
-        }
-
-        #tabelKelas thead th {
-            background-color: #212529;
-            color: white;
-            font-weight: 700;
-            padding: 15px 10px;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        #tabelKelas tbody td {
-            padding: 13px 10px;
-            vertical-align: middle;
-        }
-
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f1f1;
-        }
-
-        .table-bordered th,
-        .table-bordered td {
-            border: 1px solid #dee2e6;
         }
 
         .btn-aksi {
             font-size: 12px;
             font-weight: 600;
-            padding: 7px 11px;
-            margin-right: 3px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin: 1px;
         }
 
-        .btn-edit {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            color: #212529;
+        /* TABEL */
+
+        .table-responsive {
+            width: 100%;
         }
 
-        .btn-edit:hover {
-            background-color: #e0a800;
-            color: #212529;
+        #tabelKelas {
+            width: 100% !important;
+            border-collapse: collapse;
+            font-size: 13px;
         }
 
-        .btn-hapus {
-            background-color: #dc3545;
-            border-color: #dc3545;
+        #tabelKelas thead th {
+            background: #212529;
             color: white;
+            padding: 12px 10px;
+            border-color: #343a40;
+            white-space: nowrap;
+            vertical-align: middle;
         }
 
-        .btn-hapus:hover {
-            background-color: #c82333;
-            color: white;
+        #tabelKelas tbody td {
+            padding: 10px;
+            vertical-align: middle;
+            border-color: #dee2e6;
         }
 
-        .badge {
+        #tabelKelas tbody tr:hover {
+            background: #eef2f7;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background: #f1f1f1;
+        }
+
+        /* BADGE */
+
+        .badge-success {
+            background: #28a745;
+            padding: 5px 8px;
             font-size: 11px;
-            padding: 5px 7px;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            padding: 5px 8px;
+            font-size: 11px;
         }
 
         /* DATATABLES */
+
         .dataTables_wrapper {
+            padding-top: 8px;
             font-size: 13px;
         }
 
-        .dataTables_wrapper .dataTables_length,
+        /* PENCARIAN KIRI DAN JUMLAH DATA KANAN */
+
+        .dataTables_wrapper .row:first-child {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 0 15px;
+        }
+
         .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 13px;
+            float: none !important;
+            text-align: left !important;
+            width: 100%;
+            margin: 0;
         }
 
-        /* Kotak pencarian */
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            white-space: nowrap;
+            font-weight: 600;
+            margin: 0;
+        }
+
         .dataTables_wrapper .dataTables_filter input {
+            width: 230px;
+            height: 38px;
             border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 5px 8px;
-            outline: none;
-        }
-
-        /* Memperbaiki kotak pilihan jumlah data */
-        .dataTables_wrapper .dataTables_length select {
-            width: 60px !important;
-            height: 34px;
-            padding: 5px 8px;
-            margin: 0 5px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
+            border-radius: 6px;
+            padding: 8px 12px;
             font-size: 13px;
-            text-align: center;
-            background-color: #fff;
-            box-sizing: border-box;
-            cursor: pointer;
-            display: inline-block;
+            outline: none;
+            margin: 0;
         }
 
-       
-/* ==============================
-   DATATABLES
-============================== */
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+        }
 
-.dataTables_wrapper {
-    font-size: 13px;
-}
+        .dataTables_wrapper .dataTables_length {
+            float: none !important;
+            text-align: right;
+            margin: 0;
+        }
 
-/* Bagian tampilkan data dan pencarian */
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter {
-    margin-bottom: 13px;
-}
+        .dataTables_wrapper .dataTables_length label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+            white-space: nowrap;
+            font-weight: 400;
+            margin: 0;
+        }
 
-/* Tulisan Tampilkan dan data */
-.dataTables_wrapper .dataTables_length label {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 7px;
-    margin: 0;
-    white-space: nowrap;
-    line-height: 34px;
-    font-weight: normal;
-}
+        .dataTables_wrapper .dataTables_length select {
+            width: 65px !important;
+            height: 34px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 4px 8px;
+        }
 
-/* Kotak pilihan jumlah data */
-.dataTables_wrapper .dataTables_length select,
-.dataTables_wrapper .dataTables_length .custom-select {
-    width: 60px !important;
-    min-width: 60px !important;
-    height: 34px !important;
-    padding: 4px 8px !important;
-    margin: 0 !important;
-    border: 1px solid #ced4da !important;
-    border-radius: 5px !important;
-    background-color: #fff !important;
-    color: #212529 !important;
-    font-family: Arial, sans-serif;
-    font-size: 13px !important;
-    line-height: 24px !important;
-    text-align: center !important;
-    text-align-last: center !important;
-    box-sizing: border-box !important;
-    vertical-align: middle !important;
-    cursor: pointer;
-}
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 12px;
+        }
 
-/* Kotak pencarian */
-.dataTables_wrapper .dataTables_filter input {
-    height: 34px;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    padding: 5px 8px;
-    outline: none;
-}
+        .dataTables_wrapper .page-item.active .page-link {
+            background: #212529;
+            border-color: #212529;
+            color: white;
+        }
 
-/* Pagination */
-.dataTables_wrapper .page-item.active .page-link {
-    background-color: #212529;
-    border-color: #212529;
-}
+        .dataTables_wrapper .page-link {
+            color: #212529;
+            font-size: 13px;
+        }
 
-.dataTables_wrapper .page-link {
-    color: #212529;
-}
+        /* NOTIFIKASI */
+
+        .alert {
+            border-radius: 6px;
+            font-size: 13px;
+            padding: 10px 15px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 768px) {
+
+            #sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 15px !important;
+            }
+
+            .judul-halaman {
+                font-size: 22px;
+            }
+
+            .card-body {
+                padding: 12px;
+            }
+
+            .card-header {
+                padding: 12px;
+            }
+
+            .dataTables_wrapper .row:first-child {
+                display: block;
+            }
+
+            .dataTables_wrapper .dataTables_filter {
+                margin-bottom: 15px;
+            }
+
+            .dataTables_wrapper .dataTables_filter input {
+                width: 190px;
+            }
+
+            .dataTables_wrapper .dataTables_length {
+                text-align: left;
+            }
+
+            .dataTables_wrapper .dataTables_length label {
+                justify-content: flex-start;
+            }
+        }
 
     </style>
 </head>
@@ -274,55 +365,76 @@ $pesan = $_GET['pesan'] ?? '';
 <body>
 
 <div class="container-fluid">
+
     <div class="row">
 
         <!-- SIDEBAR -->
         <?php include 'layout/sidebar.php'; ?>
 
         <!-- KONTEN UTAMA -->
-        <main class="col-md-9 col-lg-10 p-4">
+        <main>
 
             <!-- JUDUL HALAMAN -->
-            <h3 class="judul-halaman">Kelola Kelas</h3>
 
-            <p class="deskripsi-halaman">
-                Kelola dan pantau seluruh data kelas yang terdaftar dalam sistem.
-            </p>
+            <div class="mb-3">
+
+                <h3 class="judul-halaman">
+                    <i class="bi bi-building mr-2"></i>
+                    Kelola Kelas
+                </h3>
+
+                <p class="deskripsi-halaman">
+                    Kelola dan pantau seluruh data kelas yang terdaftar dalam sistem.
+                </p>
+
+            </div>
 
             <!-- NOTIFIKASI -->
+
             <?php if ($pesan == 'hapus_berhasil') { ?>
 
                 <div class="alert alert-success alert-dismissible fade show">
+
+                    <i class="bi bi-check-circle-fill mr-2"></i>
                     Data kelas berhasil dihapus.
+
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>
+
                 </div>
 
             <?php } elseif ($pesan == 'hapus_gagal') { ?>
 
                 <div class="alert alert-danger alert-dismissible fade show">
+
+                    <i class="bi bi-exclamation-circle-fill mr-2"></i>
                     Data kelas gagal dihapus.
+
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>
+
                 </div>
 
             <?php } elseif ($pesan == 'data_tidak_ditemukan') { ?>
 
                 <div class="alert alert-warning alert-dismissible fade show">
+
                     Data kelas tidak ditemukan.
+
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>
+
                 </div>
 
             <?php } ?>
 
             <!-- CARD DATA KELAS -->
+
             <div class="card">
 
-                <!-- HEADER CARD -->
                 <div class="card-header d-flex justify-content-between align-items-center">
 
                     <h5 class="judul-card">
@@ -330,31 +442,41 @@ $pesan = $_GET['pesan'] ?? '';
                         Data Kelas
                     </h5>
 
-                    <a href="tambah_kelas.php" class="btn btn-tambah btn-sm">
+                    <a href="tambah_kelas.php"
+                       class="btn btn-tambah btn-sm">
+
                         <i class="bi bi-plus-lg mr-1"></i>
                         Tambah Kelas
+
                     </a>
 
                 </div>
 
-                <!-- ISI CARD -->
                 <div class="card-body">
 
                     <!-- TOMBOL KEMBALI -->
+
                     <div class="mb-4">
-                        <a href="dashboard.php" class="btn btn-kembali btn-sm">
+
+                        <a href="dashboard.php"
+                           class="btn btn-kembali btn-sm">
+
                             <i class="bi bi-arrow-left mr-1"></i>
                             Kembali ke Dashboard
+
                         </a>
+
                     </div>
 
-                    <!-- TABEL -->
+                    <!-- TABEL KELAS -->
+
                     <div class="table-responsive">
 
                         <table id="tabelKelas"
-                               class="table table-striped table-bordered table-hover">
+                               class="table table-striped table-bordered table-hover table-sm">
 
                             <thead>
+
                                 <tr>
                                     <th>No.</th>
                                     <th>ID</th>
@@ -366,6 +488,7 @@ $pesan = $_GET['pesan'] ?? '';
                                     <th>Diubah</th>
                                     <th>Aksi</th>
                                 </tr>
+
                             </thead>
 
                             <tbody>
@@ -374,6 +497,7 @@ $pesan = $_GET['pesan'] ?? '';
                                 $no = 1;
 
                                 while ($row = mysqli_fetch_assoc($hasil)) {
+                                    $id = (int)$row['id'];
                                 ?>
 
                                 <tr>
@@ -397,6 +521,7 @@ $pesan = $_GET['pesan'] ?? '';
                                     </td>
 
                                     <td>
+
                                         <?php if ((int)$row['status_aktif'] === 1) { ?>
 
                                             <span class="badge badge-success">
@@ -410,6 +535,7 @@ $pesan = $_GET['pesan'] ?? '';
                                             </span>
 
                                         <?php } ?>
+
                                     </td>
 
                                     <td>
@@ -422,16 +548,14 @@ $pesan = $_GET['pesan'] ?? '';
 
                                     <td style="white-space: nowrap;">
 
-                                        <!-- TOMBOL EDIT -->
-                                        <a href="edit_kelas.php?id=<?= urlencode((string)$row['id']); ?>"
-                                           class="btn btn-edit btn-sm btn-aksi">
+                                        <a href="edit_kelas.php?id=<?= $id; ?>"
+                                           class="btn btn-warning btn-sm btn-aksi">
 
                                             <i class="bi bi-pencil-square"></i>
                                             Edit
 
                                         </a>
 
-                                        <!-- TOMBOL HAPUS -->
                                         <form action="hapus_kelas.php"
                                               method="POST"
                                               style="display:inline;"
@@ -439,10 +563,10 @@ $pesan = $_GET['pesan'] ?? '';
 
                                             <input type="hidden"
                                                    name="id"
-                                                   value="<?= htmlspecialchars((string)$row['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                   value="<?= $id; ?>">
 
                                             <button type="submit"
-                                                    class="btn btn-hapus btn-sm btn-aksi">
+                                                    class="btn btn-danger btn-sm btn-aksi">
 
                                                 <i class="bi bi-trash"></i>
                                                 Hapus
@@ -464,14 +588,17 @@ $pesan = $_GET['pesan'] ?? '';
                     </div>
 
                 </div>
+
             </div>
 
         </main>
 
     </div>
+
 </div>
 
 <!-- JAVASCRIPT -->
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -481,18 +608,34 @@ $pesan = $_GET['pesan'] ?? '';
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- DATATABLES -->
+
 <script>
+
 $(document).ready(function () {
 
     $('#tabelKelas').DataTable({
 
+        dom:
+            '<"row mb-3"<"col-md-6"f><"col-md-6"l>>' +
+            'rt' +
+            '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+
         language: {
-            search: "Cari:",
+
+            search: "Cari Kelas:",
+
+            searchPlaceholder: "Masukkan nama kelas atau jurusan...",
+
             lengthMenu: "Tampilkan _MENU_ data",
+
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data kelas",
+
             infoEmpty: "Tidak ada data kelas",
+
             infoFiltered: "(difilter dari _MAX_ total data)",
+
             zeroRecords: "Data kelas tidak ditemukan",
+
             emptyTable: "Belum ada data kelas",
 
             paginate: {
@@ -501,13 +644,19 @@ $(document).ready(function () {
                 next: "Berikutnya",
                 previous: "Sebelumnya"
             }
+
         },
 
         pageLength: 10,
+
         lengthMenu: [5, 10, 25, 50, 100],
+
         searching: true,
+
         ordering: true,
+
         paging: true,
+
         autoWidth: false,
 
         columnDefs: [
@@ -522,6 +671,7 @@ $(document).ready(function () {
     });
 
 });
+
 </script>
 
 </body>

@@ -258,6 +258,7 @@ if (!$query_user) {
                                maxlength="18"
                                pattern="[0-9]{18}"
                                inputmode="numeric"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 18);"
                                title="NIP harus terdiri dari 18 angka"
                                required>
 
@@ -476,6 +477,7 @@ const password = document.getElementById("password");
 const konfirmasi = document.getElementById("konfirmasi_password");
 const pesan = document.getElementById("pesanPassword");
 const form = document.getElementById("formGuru");
+const nip = document.getElementById("nip");
 
 function cekPassword() {
 
@@ -504,7 +506,22 @@ function cekPassword() {
 password.addEventListener("input", cekPassword);
 konfirmasi.addEventListener("input", cekPassword);
 
+// Validasi NIP harus tepat 18 angka
 form.addEventListener("submit", function(event) {
+
+    nip.value = nip.value.replace(/[^0-9]/g, '').slice(0, 18);
+
+    if (!/^[0-9]{18}$/.test(nip.value)) {
+        event.preventDefault();
+
+        nip.setCustomValidity("NIP harus terdiri dari tepat 18 angka!");
+        nip.reportValidity();
+        nip.focus();
+
+        return;
+    }
+
+    nip.setCustomValidity("");
 
     cekPassword();
 
@@ -513,6 +530,10 @@ form.addEventListener("submit", function(event) {
         form.reportValidity();
     }
 
+});
+
+nip.addEventListener("input", function() {
+    nip.setCustomValidity("");
 });
 
 </script>

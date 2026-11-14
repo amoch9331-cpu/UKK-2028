@@ -1,244 +1,744 @@
+
 <?php
+// catat_pelanggaran.php
+
+if (session_status() === PHP_SESSION_NONE) {
+  
+}
+
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
 
 $role = strtolower(trim($_SESSION['role'] ?? ''));
 $current_page = basename($_SERVER['PHP_SELF']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = (int) ($_POST['id'] ?? 0);
-    $tindakan = mysqli_real_escape_string($koneksi, trim($_POST['tindakan'] ?? ''));
-
-    $sql_update = "UPDATE t_pelanggaran_siswa SET tindakan = '$tindakan' WHERE id = $id";
-    if (mysqli_query($koneksi, $sql_update)) {
-        header('Location: tindakan.php?pesan=berhasil');
-        exit;
-    } else {
-        $pesan_error = mysqli_error($koneksi);
-    }
+function e($value) {
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-$sql = "SELECT id, nama_siswa, nama_kelas, nama_pelanggaran, poin, keterangan, tindakan 
-        FROM t_pelanggaran_siswa 
-        ORDER BY id DESC";
+// ===============================
+// DAFTAR SISWA
+// ===============================
+$siswa = mysqli_query(
+    $koneksi,
+    "SELECT id, nis, nama
+     FROM t_siswa
+     WHERE status_aktif = 1
+     ORDER BY nama ASC"
+);
+
+// ===============================
+// DAFTAR PELANGGARAN
+// ===============================
+$pelanggaran = mysqli_query(
+    $koneksi,
+    "SELECT id, nama, poin, pelanggaran_kategori_id
+     FROM t_pelanggaran
+     WHERE status_aktif = 1
+     ORDER BY nama ASC"
+);
+
+if (!$siswa || !$pelanggaran) {
+    die('Gagal mengambil data: ' . e(mysqli_error($koneksi)));
+}
+
+// ===============================
+// DATA CATATAN PELANGGARAN
+// ===============================
+$sql = "SELECT
+            ps.*,
+            ta.nama AS tahun_ajaran,
+            s.nis,
+            s.nama AS nama_siswa,
+            k.nama AS nama_kelas,
+            p.nama AS nama_pelanggaran
+        FROM t_pelanggaran_siswa ps
+        LEFT JOIN t_tahun_ajaran ta
+            ON ps.tahun_ajaran_id = ta.id
+        LEFT JOIN t_siswa s
+            ON ps.siswa_id = s.id
+        LEFT JOIN t_kelas k
+            ON ps.kelas_id = k.id
+        LEFT JOIN t_pelanggaran p
+            ON ps.pelanggaran_id = p.id
+        ORDER BY ps.id DESC";
+
 $hasil = mysqli_query($koneksi, $sql);
+
 if (!$hasil) {
-    die('Gagal mengambil data: ' . mysqli_error($koneksi));
+    die('Gagal mengambil data pelanggaran: ' . e(mysqli_error($koneksi)));
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tindakan Pelanggaran Siswa</title>
+
+    <title>Catat Pelanggaran Siswa</title>
+
+    <!-- BOOTSTRAP -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- BOOTSTRAP ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- SELECT2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+    <!-- DATATABLES -->
     <link href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
         }
-        .sidebar {
-            background-color: #212529;
+
+        /* =========================
+           LAYOUT
+        ========================= */
+        .layout-wrapper {
+            display: flex;
+            width: 100%;
             min-height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
+            align-items: stretch;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            min-height: 100vh;
+            flex-shrink: 0;
+            background: #1a1d20;
+            color: #fff;
+            position: relative;
             z-index: 100;
         }
-        .sidebar .nav-link {
+
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            padding: 15px;
+        }
+
+        .sidebar-header {
+            padding: 15px 10px 12px;
+        }
+
+        .sidebar-header h5 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-header p {
             color: #adb5bd;
-            padding: 0.6rem 1rem;
-            border-radius: 0.375rem;
-            margin-bottom: 0.25rem;
+            font-size: 12px;
+            margin: 0;
         }
+
+        .sidebar-divider {
+            border-color: #495057;
+            opacity: 0.7;
+            margin: 15px 0;
+        }
+
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #adb5bd;
+            padding: 13px 12px;
+            margin-bottom: 4px;
+            border-radius: 9px;
+            font-size: 14px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 17px;
+            width: 18px;
+            text-align: center;
+        }
+
         .sidebar .nav-link:hover {
-            background-color: #343a40;
+            background: #292e33;
             color: #fff;
         }
+
         .sidebar .nav-link.active {
-            background-color: #0d6efd;
+            background: #0d6efd;
             color: #fff;
         }
-        .main-content {
-            margin-left: 250px;
-            padding: 1.5rem;
+
+        .sidebar .logout-link {
+            color: #ff4d5a;
         }
+
+        .sidebar .logout-link:hover {
+            background: #292e33;
+            color: #ff4d5a;
+        }
+
+        /* =========================
+           CONTENT
+        ========================= */
         .card {
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            border-radius: 0.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
+
         .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid #e9ecef;
-            font-weight: 600;
+            padding: 15px 20px;
         }
+
         .breadcrumb-link {
             color: #0d6efd;
             text-decoration: none;
         }
+
         .breadcrumb-link:hover {
             text-decoration: underline;
         }
+
+        /* =========================
+           SELECT2
+        ========================= */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.375rem !important;
+        }
+
+        .select2-container--default .select2-selection--single
+        .select2-selection__rendered {
+            line-height: 36px !important;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single
+        .select2-selection__arrow {
+            height: 36px !important;
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
         @media (max-width: 768px) {
+            .layout-wrapper {
+                flex-direction: column;
+            }
+
             .sidebar {
-                position: relative;
                 width: 100%;
+                min-width: 100%;
                 min-height: auto;
             }
-            .main-content {
-                margin-left: 0;
+
+            .sidebar-inner {
+                position: relative;
+            }
+
+            .dashboard-content {
+                width: 100%;
+                padding: 15px;
             }
         }
     </style>
 </head>
+
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar p-3">
-            <h5 class="text-white mb-4">PELANGGARAN SISWA</h5>
-            <p class="text-secondary small mb-3">Role: <?= htmlspecialchars(ucfirst($role)) ?></p>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="dashboard.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'dashboard.php') ? 'active' : '' ?>">
-                        <span>📊</span> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="catat_pelanggaran.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'catat_pelanggaran.php') ? 'active' : '' ?>">
-                        <span>📝</span> Catat Pelanggaran
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="tindakan.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'tindakan.php') ? 'active' : '' ?>">
-                        <span>⚖️</span> Tindakan
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="riwayat.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'riwayat.php') ? 'active' : '' ?>">
-                        <span>🕒</span> Riwayat
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="rekap_poin.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'rekap_poin.php') ? 'active' : '' ?>">
-                        <span>📈</span> Rekap Poin
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="laporan.php" class="nav-link d-flex align-items-center gap-2 <?= ($current_page == 'laporan.php') ? 'active' : '' ?>">
-                        <span>📄</span> Laporan
-                    </a>
-                </li>
-                <hr class="text-secondary my-3">
-                <li class="nav-item">
-                    <a href="logout.php" class="nav-link text-danger d-flex align-items-center gap-2">
-                        <span>➡️</span> Logout
-                    </a>
-                </li>
-            </ul>
+
+<div class="layout-wrapper">
+
+    <!-- =========================
+         SIDEBAR
+    ========================= -->
+<?php include 'layout/sidebar.php'; ?>
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================= -->
+    <main class="dashboard-content">
+
+        <h2 class="mb-1">Catat Pelanggaran Siswa</h2>
+
+        <p class="text-muted mb-4">
+            <a href="<?= $role === 'guru' ? 'dashboard_guru.php' : 'dashboard.php' ?>"
+               class="breadcrumb-link">Kembali ke Dashboard</a>
+            / Catat Pelanggaran
+        </p>
+
+        <!-- NOTIFIKASI SUKSES -->
+        <?php if (isset($_SESSION['pesan_sukses'])): ?>
+
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <?= e($_SESSION['pesan_sukses']) ?>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <?php unset($_SESSION['pesan_sukses']); ?>
+
+        <?php endif; ?>
+
+        <!-- NOTIFIKASI ERROR -->
+        <?php if (isset($_SESSION['pesan_error'])): ?>
+
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <?= e($_SESSION['pesan_error']) ?>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <?php unset($_SESSION['pesan_error']); ?>
+
+        <?php endif; ?>
+
+        <!-- =========================
+             FORM CATAT PELANGGARAN
+        ========================= -->
+        <div class="card mb-4">
+
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Form Catat Pelanggaran
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <form action="proses_simpan_pelanggaran.php"
+                      method="POST"
+                      id="formPelanggaran">
+
+                    <div class="row">
+
+                        <!-- SISWA -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="siswa_id" class="form-label">
+                                Siswa
+                            </label>
+
+                            <select name="siswa_id"
+                                    id="siswa_id"
+                                    class="form-select"
+                                    required>
+
+                                <option value=""></option>
+
+                                <?php while ($s = mysqli_fetch_assoc($siswa)): ?>
+
+                                    <option value="<?= (int)$s['id'] ?>">
+                                        <?= e($s['nis'] . ' - ' . $s['nama']) ?>
+                                    </option>
+
+                                <?php endwhile; ?>
+
+                            </select>
+
+                            <small class="text-muted">
+                                Ketik NIS atau nama siswa untuk mencari.
+                            </small>
+
+                        </div>
+
+                        <!-- TAHUN AJARAN -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="nama_tahun" class="form-label">
+                                Tahun Ajaran
+                            </label>
+
+                            <input type="text"
+                                   id="nama_tahun"
+                                   class="form-control"
+                                   placeholder="Otomatis sesuai siswa"
+                                   readonly>
+
+                            <input type="hidden"
+                                   name="tahun_ajaran_id"
+                                   id="tahun_ajaran_id">
+
+                        </div>
+
+                        <!-- KELAS -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="nama_kelas" class="form-label">
+                                Kelas
+                            </label>
+
+                            <input type="text"
+                                   id="nama_kelas"
+                                   class="form-control"
+                                   placeholder="Otomatis sesuai siswa"
+                                   readonly>
+
+                            <input type="hidden"
+                                   name="kelas_id"
+                                   id="kelas_id">
+
+                        </div>
+
+                        <!-- JENIS PELANGGARAN -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="pelanggaran" class="form-label">
+                                Jenis Pelanggaran
+                            </label>
+
+                            <select name="pelanggaran_id"
+                                    id="pelanggaran"
+                                    class="form-select"
+                                    required>
+
+                                <option value="">-- Pilih Pelanggaran --</option>
+
+                                <?php while ($p = mysqli_fetch_assoc($pelanggaran)): ?>
+
+                                    <option
+                                        value="<?= (int)$p['id'] ?>"
+                                        data-poin="<?= (int)$p['poin'] ?>"
+                                        data-kategori="<?= (int)$p['pelanggaran_kategori_id'] ?>">
+
+                                        <?= e($p['nama'] . ' (' . $p['poin'] . ' poin)') ?>
+
+                                    </option>
+
+                                <?php endwhile; ?>
+
+                            </select>
+
+                            <input type="hidden"
+                                   name="pelanggaran_kategori_id"
+                                   id="kategori">
+
+                        </div>
+
+                        <!-- TANGGAL -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="tanggal" class="form-label">
+                                Tanggal
+                            </label>
+
+                            <input type="date"
+                                   name="tanggal"
+                                   id="tanggal"
+                                   class="form-control"
+                                   value="<?= date('Y-m-d') ?>"
+                                   required>
+
+                        </div>
+
+                        <!-- POIN -->
+                        <div class="col-md-6 mb-3">
+
+                            <label for="poin" class="form-label">
+                                Poin Pelanggaran
+                            </label>
+
+                            <input type="number"
+                                   name="poin"
+                                   id="poin"
+                                   class="form-control"
+                                   placeholder="Poin otomatis"
+                                   min="0"
+                                   readonly
+                                   required>
+
+                        </div>
+
+                        <!-- KETERANGAN -->
+                        <div class="col-12 mb-3">
+
+                            <label for="keterangan" class="form-label">
+                                Keterangan
+                            </label>
+
+                            <textarea name="keterangan"
+                                      id="keterangan"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Masukkan keterangan tambahan jika ada..."></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>
+                            Simpan Pelanggaran
+                        </button>
+
+                        <button type="reset"
+                                class="btn btn-secondary"
+                                id="btnReset">
+
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Reset
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content flex-grow-1">
-            <h2 class="mb-1">Tindakan Pelanggaran Siswa</h2>
-            <p class="text-muted mb-4">
-                <a href="dashboard.php" class="breadcrumb-link">Kembali ke Dashboard</a> | Tindakan
-            </p>
+        <!-- =========================
+             DATA CATATAN PELANGGARAN
+        ========================= -->
+        <div class="card">
 
-            <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'berhasil'): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    Tindakan berhasil disimpan.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-            <?php if (isset($pesan_error)): ?>
-                <div class="alert alert-danger" role="alert">
-                    Gagal menyimpan tindakan: <?= htmlspecialchars($pesan_error) ?>
-                </div>
-            <?php endif; ?>
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Data Catatan Pelanggaran
+                </h5>
+            </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">📋 Data Pelanggaran Siswa</h5>
-                    <div class="table-responsive">
-                        <table id="tabelTindakan" class="table table-striped table-bordered table-hover align-middle">
-                            <thead class="table-dark">
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table id="tabelPelanggaran"
+                           class="table table-bordered table-striped table-hover w-100">
+
+                        <thead class="table-dark">
+                            <tr>
+                                <th>No</th>
+                                <th>Tahun Ajaran</th>
+                                <th>NIS</th>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Jenis Pelanggaran</th>
+                                <th>Poin</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <?php
+                            $no = 1;
+
+                            while ($row = mysqli_fetch_assoc($hasil)):
+                            ?>
+
                                 <tr>
-                                    <th>No.</th>
-                                    <th>Nama Siswa</th>
-                                    <th>Kelas</th>
-                                    <th>Pelanggaran</th>
-                                    <th>Poin</th>
-                                    <th>Keterangan</th>
-                                    <th>Tindakan</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($row = mysqli_fetch_assoc($hasil)): ?>
-                                <tr>
-                                    <td></td>
-                                    <td><?= htmlspecialchars($row['nama_siswa'] ?? '-') ?></td>
-                                    <td><?= htmlspecialchars($row['nama_kelas'] ?? '-') ?></td>
-                                    <td><?= htmlspecialchars($row['nama_pelanggaran'] ?? '-') ?></td>
+
+                                    <td><?= $no++ ?></td>
+
+                                    <td>
+                                        <?= e($row['tahun_ajaran'] ?? '-') ?>
+                                    </td>
+
+                                    <td>
+                                        <?= e($row['nis'] ?? '-') ?>
+                                    </td>
+
+                                    <td>
+                                        <?= e($row['nama_siswa'] ?? '-') ?>
+                                    </td>
+
+                                    <td>
+                                        <?= e($row['nama_kelas'] ?? '-') ?>
+                                    </td>
+
+                                    <td>
+                                        <?= e($row['nama_pelanggaran'] ?? '-') ?>
+                                    </td>
+
                                     <td class="text-center">
-                                        <span class="badge bg-warning text-dark">
+                                        <span class="badge bg-danger">
                                             <?= (int)($row['poin'] ?? 0) ?> Poin
                                         </span>
                                     </td>
-                                    <td><?= htmlspecialchars($row['keterangan'] ?? '-') ?></td>
+
                                     <td>
-                                        <form method="POST" action="tindakan.php" class="d-flex gap-1 align-items-center">
-                                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                                            <textarea name="tindakan" class="form-control form-control-sm" 
-                                                      rows="2" placeholder="Masukkan tindakan yang diberikan..." required><?= 
-                                                htmlspecialchars($row['tindakan'] ?? '') 
-                                            ?></textarea>
-                                            <button type="submit" class="btn btn-success btn-sm text-nowrap">Simpan</button>
-                                        </form>
+                                        <?php
+                                        if (!empty($row['tanggal'])) {
+                                            echo e(date('d-m-Y', strtotime($row['tanggal'])));
+                                        } else {
+                                            echo '-';
+                                        }
+                                        ?>
                                     </td>
-                                    <td class="text-center">
-                                        <?php if (!empty($row['tindakan'])): ?>
-                                            <span class="badge bg-success">Ditindaklanjuti</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">Belum</span>
-                                        <?php endif; ?>
-                                    </td>
+
                                 </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
+
+                            <?php endwhile; ?>
+
+                        </tbody>
+
+                    </table>
+
                 </div>
+
             </div>
         </div>
-    </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#tabelTindakan').DataTable({
-                pageLength: 10,
-                lengthMenu: [5, 10, 25, 50, 100],
-                order: [[1, 'asc']],
-                columnDefs: [
-                    { orderable: false, searchable: false, targets: [0, 6, 7] }
-                ],
-                drawCallback: function () {
-                    var api = this.api();
-                    var nomorAwal = api.page.info().start;
-                    api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-                        cell.innerHTML = nomorAwal + i + 1;
-                    });
-                }
-            });
-        });
-    </script>
+    </main>
+</div>
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    // SELECT2 SISWA
+    $('#siswa_id').select2({
+        placeholder: '-- Cari NIS atau Nama Siswa --',
+        allowClear: true,
+        width: '100%'
+    });
+
+    // SELECT2 PELANGGARAN
+    $('#pelanggaran').select2({
+        placeholder: '-- Pilih Pelanggaran --',
+        allowClear: true,
+        width: '100%'
+    });
+
+    // DATATABLES
+    $('#tabelPelanggaran').DataTable({
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        ordering: true,
+        responsive: false,
+
+        language: {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Belum ada catatan pelanggaran',
+
+            paginate: {
+                first: 'Pertama',
+                last: 'Terakhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
+        }
+    });
+
+    // OTOMATIS POIN DAN KATEGORI
+    $('#pelanggaran').on('change', function () {
+
+        const selected = $(this).find(':selected');
+
+        const poin = selected.data('poin') ?? '';
+        const kategori = selected.data('kategori') ?? '';
+
+        $('#poin').val(poin);
+        $('#kategori').val(kategori);
+
+    });
+
+    // RESET FORM
+    $('#btnReset').on('click', function () {
+
+        setTimeout(function () {
+
+            $('#siswa_id').val('').trigger('change');
+            $('#pelanggaran').val('').trigger('change');
+
+            $('#nama_tahun').val('');
+            $('#tahun_ajaran_id').val('');
+
+            $('#nama_kelas').val('');
+            $('#kelas_id').val('');
+
+            $('#poin').val('');
+            $('#kategori').val('');
+
+            $('#tanggal').val('<?= date('Y-m-d') ?>');
+
+        }, 10);
+
+    });
+
+    // VALIDASI FORM
+    $('#formPelanggaran').on('submit', function (e) {
+
+        if (!$('#siswa_id').val()) {
+            e.preventDefault();
+            alert('Silakan pilih siswa terlebih dahulu.');
+            return false;
+        }
+
+        if (!$('#pelanggaran').val()) {
+            e.preventDefault();
+            alert('Silakan pilih jenis pelanggaran.');
+            return false;
+        }
+
+        if (!$('#poin').val()) {
+            e.preventDefault();
+            alert('Poin pelanggaran belum terisi.');
+            return false;
+        }
+
+        if (!$('#tanggal').val()) {
+            e.preventDefault();
+            alert('Silakan isi tanggal pelanggaran.');
+            return false;
+        }
+
+    });
+
+});
+</script>
+
 </body>
 </html>

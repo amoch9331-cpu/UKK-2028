@@ -5,6 +5,10 @@
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
 
+// =====================================
+// AMBIL DATA WALI KELAS
+// =====================================
+
 $sql = "SELECT
             w.*,
             k.nama AS nama_kelas,
@@ -25,36 +29,76 @@ $pesan = $_GET['pesan'] ?? '';
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kelola Wali Kelas</title>
+    <title>Kelola Wali Kelas - SIPENSIS</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            background: #f4f5f7;
             font-family: Arial, sans-serif;
             color: #212529;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            min-height: 100vh;
+            background: #1a1d20;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        /* AREA UTAMA */
+        .container-fluid {
+            padding: 0;
+        }
+
+        .row {
+            display: block;
+            margin: 0;
         }
 
         main {
+            display: block;
+            margin-left: 260px !important;
+            width: calc(100% - 260px) !important;
+            max-width: none !important;
             min-height: 100vh;
+            padding: 15px 25px 25px !important;
+            background: #f4f5f7;
         }
 
+        /* JUDUL */
         .judul-halaman {
             font-size: 26px;
             font-weight: 700;
+            margin-top: 0;
             margin-bottom: 3px;
             color: #212529;
         }
@@ -62,18 +106,22 @@ $pesan = $_GET['pesan'] ?? '';
         .deskripsi-halaman {
             color: #6c757d;
             font-size: 14px;
-            margin-bottom: 22px;
+            margin-bottom: 18px;
         }
 
+        /* CARD */
         .card {
+            width: 100%;
             border: none;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-top: 0;
+            background: #fff;
         }
 
         .card-header {
-            background-color: #ffffff;
+            background: #ffffff;
             border-bottom: 1px solid #dee2e6;
             padding: 16px 20px;
         }
@@ -88,38 +136,41 @@ $pesan = $_GET['pesan'] ?? '';
             padding: 18px;
         }
 
+        /* TOMBOL TAMBAH */
         .btn-tambah {
-            background-color: #212529;
+            background: #212529;
             border-color: #212529;
-            color: #ffffff;
+            color: white;
             font-size: 13px;
             font-weight: 600;
         }
 
         .btn-tambah:hover {
-            background-color: #343a40;
-            color: #ffffff;
+            background: #343a40;
+            color: white;
         }
 
+        /* TOMBOL KEMBALI */
         .btn-kembali {
-            background-color: #6c757d;
+            background: #6c757d;
             border-color: #6c757d;
             color: white;
             font-size: 13px;
         }
 
         .btn-kembali:hover {
-            background-color: #5a6268;
+            background: #5a6268;
             color: white;
         }
 
+        /* TABEL */
         #tabelWaliKelas {
             width: 100% !important;
             font-size: 13px;
         }
 
         #tabelWaliKelas thead th {
-            background-color: #212529;
+            background: #212529;
             color: white;
             font-weight: 700;
             padding: 15px 10px;
@@ -133,7 +184,7 @@ $pesan = $_GET['pesan'] ?? '';
         }
 
         .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f1f1;
+            background: #f1f1f1;
         }
 
         .table-bordered th,
@@ -141,6 +192,7 @@ $pesan = $_GET['pesan'] ?? '';
             border: 1px solid #dee2e6;
         }
 
+        /* TOMBOL AKSI */
         .btn-aksi {
             font-size: 12px;
             font-weight: 600;
@@ -149,24 +201,24 @@ $pesan = $_GET['pesan'] ?? '';
         }
 
         .btn-edit {
-            background-color: #ffc107;
+            background: #ffc107;
             border-color: #ffc107;
             color: #212529;
         }
 
         .btn-edit:hover {
-            background-color: #e0a800;
+            background: #e0a800;
             color: #212529;
         }
 
         .btn-hapus {
-            background-color: #dc3545;
+            background: #dc3545;
             border-color: #dc3545;
             color: white;
         }
 
         .btn-hapus:hover {
-            background-color: #c82333;
+            background: #c82333;
             color: white;
         }
 
@@ -181,49 +233,58 @@ $pesan = $_GET['pesan'] ?? '';
             padding-top: 10px;
         }
 
-        .dataTables_wrapper .dataTables_length,
-        .dataTables_wrapper .dataTables_filter {
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_length {
+            float: left !important;
+            width: 100%;
+            text-align: left !important;
             margin-bottom: 13px;
         }
 
-        /* Kotak pencarian */
+        /* PENCARIAN DI KIRI */
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
         .dataTables_wrapper .dataTables_filter input {
             border: 1px solid #ced4da;
             border-radius: 5px;
             padding: 5px 8px;
             outline: none;
-            margin-left: 5px;
+            margin-left: 0 !important;
+            height: 34px;
+            width: 180px;
         }
 
-        /* Kotak pilihan jumlah data */
+        /* TAMPILKAN DATA TETAP DI KIRI */
+        .dataTables_wrapper .dataTables_length label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 5px;
+            white-space: nowrap;
+            margin-bottom: 10px;
+        }
+
         .dataTables_wrapper .dataTables_length select {
-            width: 60px !important;
+            width: 65px !important;
             height: 34px !important;
             padding: 4px 5px !important;
             margin: 0 5px !important;
             border: 1px solid #ced4da !important;
             border-radius: 5px !important;
             font-size: 13px !important;
-            text-align: center;
-            background-color: #ffffff !important;
-            box-sizing: border-box;
+            background: white !important;
             cursor: pointer;
-            display: inline-block;
-            vertical-align: middle;
         }
 
-        /* Tulisan Tampilkan dan data */
-        .dataTables_wrapper .dataTables_length label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-            margin-bottom: 10px;
-        }
-
-        /* Pagination */
+        /* PAGINATION */
         .dataTables_wrapper .page-item.active .page-link {
-            background-color: #212529;
+            background: #212529;
             border-color: #212529;
         }
 
@@ -231,8 +292,16 @@ $pesan = $_GET['pesan'] ?? '';
             color: #212529;
         }
 
+        /* RESPONSIVE */
         @media (max-width: 768px) {
+            #sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
             main {
+                margin-left: 0 !important;
+                width: 100% !important;
                 padding: 15px !important;
             }
 
@@ -242,6 +311,23 @@ $pesan = $_GET['pesan'] ?? '';
 
             .card-body {
                 padding: 12px;
+            }
+
+            .dataTables_wrapper .dataTables_filter,
+            .dataTables_wrapper .dataTables_length {
+                float: none !important;
+                width: 100%;
+                text-align: left !important;
+            }
+
+            .dataTables_wrapper .dataTables_filter label,
+            .dataTables_wrapper .dataTables_length label {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .dataTables_wrapper .dataTables_filter input {
+                width: 150px;
             }
         }
     </style>
@@ -256,10 +342,11 @@ $pesan = $_GET['pesan'] ?? '';
         <?php include 'layout/sidebar.php'; ?>
 
         <!-- KONTEN UTAMA -->
-        <main class="col-md-9 col-lg-10 p-4">
+        <main>
 
-            <!-- JUDUL HALAMAN -->
-            <h3 class="judul-halaman">Kelola Wali Kelas</h3>
+            <h3 class="judul-halaman">
+                Kelola Wali Kelas
+            </h3>
 
             <p class="deskripsi-halaman">
                 Kelola dan pantau seluruh data wali kelas yang terdaftar dalam sistem.
@@ -298,7 +385,6 @@ $pesan = $_GET['pesan'] ?? '';
             <!-- CARD DATA WALI KELAS -->
             <div class="card">
 
-                <!-- HEADER CARD -->
                 <div class="card-header d-flex justify-content-between align-items-center">
 
                     <h5 class="judul-card">
@@ -313,10 +399,9 @@ $pesan = $_GET['pesan'] ?? '';
 
                 </div>
 
-                <!-- ISI CARD -->
                 <div class="card-body">
 
-                    <!-- TOMBOL KEMBALI -->
+                    <!-- KEMBALI -->
                     <div class="mb-4">
                         <a href="dashboard.php" class="btn btn-kembali btn-sm">
                             <i class="bi bi-arrow-left mr-1"></i>
@@ -345,7 +430,6 @@ $pesan = $_GET['pesan'] ?? '';
                             </thead>
 
                             <tbody>
-
                                 <?php
                                 $no = 1;
 
@@ -354,7 +438,6 @@ $pesan = $_GET['pesan'] ?? '';
                                 ?>
 
                                 <tr>
-
                                     <td><?= $no++; ?></td>
 
                                     <td>
@@ -403,58 +486,44 @@ $pesan = $_GET['pesan'] ?? '';
 
                                     <td>
                                         <?php if ((int) $row['status_aktif'] === 1) { ?>
-
                                             <span class="badge badge-success">
                                                 Aktif
                                             </span>
-
                                         <?php } else { ?>
-
                                             <span class="badge badge-danger">
                                                 Tidak Aktif
                                             </span>
-
                                         <?php } ?>
                                     </td>
 
                                     <td style="white-space: nowrap;">
 
-                                        <!-- TOMBOL EDIT -->
                                         <a href="edit_wali_kelas.php?id=<?= urlencode($id); ?>"
                                            class="btn btn-edit btn-sm btn-aksi">
-
                                             <i class="bi bi-pencil-square"></i>
                                             Edit
-
                                         </a>
 
-                                        <!-- TOMBOL HAPUS -->
                                         <a href="hapus_wali_kelas.php?id=<?= urlencode($id); ?>"
                                            class="btn btn-hapus btn-sm btn-aksi"
                                            onclick="return confirm('Yakin ingin menghapus data wali kelas ini?');">
-
                                             <i class="bi bi-trash"></i>
                                             Hapus
-
                                         </a>
 
                                     </td>
-
                                 </tr>
 
                                 <?php } ?>
-
                             </tbody>
 
                         </table>
 
                     </div>
-
                 </div>
             </div>
 
         </main>
-
     </div>
 </div>
 
@@ -467,7 +536,6 @@ $pesan = $_GET['pesan'] ?? '';
 
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
-<!-- DATATABLES -->
 <script>
 $(document).ready(function () {
 
@@ -491,15 +559,10 @@ $(document).ready(function () {
         },
 
         pageLength: 10,
-
         lengthMenu: [5, 10, 25, 50, 100],
-
         searching: true,
-
         ordering: true,
-
         paging: true,
-
         autoWidth: false,
 
         columnDefs: [

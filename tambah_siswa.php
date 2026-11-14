@@ -1,3 +1,4 @@
+
 <?php
 include 'includes/cek_session.php';
 ?>
@@ -26,7 +27,6 @@ include 'includes/cek_session.php';
             min-height: 100vh;
         }
 
-        /* NAVBAR */
         .navbar {
             background: #343a40;
         }
@@ -40,13 +40,11 @@ include 'includes/cek_session.php';
             color: #ddd;
         }
 
-        /* CONTAINER FORM */
         .container-form {
             max-width: 1100px;
             margin: 40px auto;
         }
 
-        /* CARD */
         .card {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
@@ -55,7 +53,6 @@ include 'includes/cek_session.php';
             background: white;
         }
 
-        /* HEADER */
         .card-header {
             background: #f1f1f1;
             color: #333;
@@ -76,14 +73,12 @@ include 'includes/cek_session.php';
             padding: 35px;
         }
 
-        /* LABEL */
         .form-label {
             font-weight: 600;
             color: #334155;
             margin-bottom: 10px;
         }
 
-        /* INPUT */
         .form-control,
         .form-select {
             padding: 13px 15px;
@@ -104,7 +99,6 @@ include 'includes/cek_session.php';
             resize: vertical;
         }
 
-        /* BUTTON */
         .btn {
             padding: 12px 25px;
             border-radius: 8px;
@@ -145,7 +139,6 @@ include 'includes/cek_session.php';
             color: #343a40;
         }
 
-        /* FOOTER */
         footer {
             background: #343a40;
             color: white;
@@ -154,7 +147,6 @@ include 'includes/cek_session.php';
             margin-top: 50px;
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container-form {
                 margin: 25px 15px;
@@ -197,7 +189,6 @@ include 'includes/cek_session.php';
 
     <div class="card">
 
-        <!-- HEADER -->
         <div class="card-header">
 
             <h4>Tambah Siswa</h4>
@@ -208,44 +199,57 @@ include 'includes/cek_session.php';
 
         </div>
 
-        <!-- FORM -->
         <div class="card-body">
 
-            <form action="proses_tambah_siswa.php" method="POST">
+            <form action="proses_tambah_siswa.php"
+                  method="POST"
+                  id="formTambahSiswa">
 
                 <div class="row">
 
-                    <!-- NIS (Limit 15 Karakter) -->
+                    <!-- NIS -->
                     <div class="col-md-6 mb-3">
 
                         <label class="form-label">NIS</label>
 
                         <input type="text"
                                name="nis"
+                               id="nis"
                                class="form-control"
-                               placeholder="Masukkan NIS (15 digit)"
-                               minlength="15"
-                               maxlength="15"
-                               pattern="[0-9]{15}"
+                               placeholder="Masukkan NIS (8 digit)"
+                               minlength="8"
+                               maxlength="8"
+                               pattern="[0-9]{8}"
                                inputmode="numeric"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"
                                required>
+
+                        <small class="text-muted">
+                            NIS harus terdiri dari tepat 8 angka.
+                        </small>
 
                     </div>
 
-                    <!-- NISN (Limit 10 Karakter) -->
+                    <!-- NISN -->
                     <div class="col-md-6 mb-3">
 
                         <label class="form-label">NISN</label>
 
                         <input type="text"
                                name="nisn"
+                               id="nisn"
                                class="form-control"
                                placeholder="Masukkan NISN (10 digit)"
                                minlength="10"
                                maxlength="10"
                                pattern="[0-9]{10}"
                                inputmode="numeric"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
                                required>
+
+                        <small class="text-muted">
+                            NISN harus terdiri dari tepat 10 angka.
+                        </small>
 
                     </div>
 
@@ -353,6 +357,36 @@ include 'includes/cek_session.php';
 <footer>
     &copy; 2026 Sistem Informasi Pelanggaran Siswa
 </footer>
+
+<!-- VALIDASI -->
+<script>
+document.getElementById('formTambahSiswa').addEventListener('submit', function(event) {
+
+    const nis = document.getElementById('nis').value;
+    const nisn = document.getElementById('nisn').value;
+
+    // Validasi NIS: tepat 8 angka
+    if (!/^[0-9]{8}$/.test(nis)) {
+        event.preventDefault();
+
+        alert('NIS harus terdiri dari tepat 8 angka!');
+
+        document.getElementById('nis').focus();
+        return;
+    }
+
+    // Validasi NISN: tepat 10 angka
+    if (!/^[0-9]{10}$/.test(nisn)) {
+        event.preventDefault();
+
+        alert('NISN harus terdiri dari tepat 10 angka!');
+
+        document.getElementById('nisn').focus();
+        return;
+    }
+
+});
+</script>
 
 </body>
 </html>

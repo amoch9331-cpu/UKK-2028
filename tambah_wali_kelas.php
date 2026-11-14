@@ -122,16 +122,19 @@ include 'config/koneksi.php';
             margin-bottom: 11px;
         }
 
-        .form-control {
+        .form-control,
+        .form-select {
             height: 51px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             padding: 12px 15px;
             font-size: 15px;
             color: #334155;
+            background-color: white;
         }
 
-        .form-control:focus {
+        .form-control:focus,
+        .form-select:focus {
             border-color: #64748b;
             box-shadow: 0 0 0 3px rgba(52, 58, 64, 0.10);
         }
@@ -320,16 +323,21 @@ include 'config/koneksi.php';
 
                         <!-- TAHUN AJARAN -->
                         <div class="col-md-6">
-                            <label class="form-label">Tahun Ajaran</label>
+                            <label for="tahun_ajaran" class="form-label">
+                                Tahun Ajaran
+                            </label>
 
-                            <input
-                                type="text"
+                            <select
                                 name="tahun_ajaran"
-                                class="form-control"
-                                placeholder="Contoh: 2026/2027"
-                                pattern="[0-9]{4}/[0-9]{4}"
-                                title="Gunakan format 2026/2027"
+                                id="tahun_ajaran"
+                                class="form-select"
                                 required>
+
+                                <option value="2026/2027" selected>
+                                    2026/2027
+                                </option>
+
+                            </select>
                         </div>
 
                     </div>

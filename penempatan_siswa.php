@@ -7,541 +7,704 @@
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
 
+$pesan = $_GET['pesan'] ?? '';
+$error = '';
+
+$mode_tambah = isset($_GET['tambah']) && $_GET['tambah'] == '1';
+
 // ==========================================
-// PROSES TAMBAH PENEMPATAN
+// PROSES SIMPAN PENEMPATAN
 // ==========================================
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['simpan_penempatan'])) {
+if (isset($_POST['simpan'])) {
 
     $siswa_id = (int)($_POST['siswa_id'] ?? 0);
     $tahun_ajaran_id = (int)($_POST['tahun_ajaran_id'] ?? 0);
     $kelas_id = (int)($_POST['kelas_id'] ?? 0);
+
     $tanggal_mulai = $_POST['tanggal_mulai'] ?? '';
-    $tanggal_selesai = !empty($_POST['tanggal_selesai'])
-        ? $_POST['tanggal_selesai'] : null;
-    $status_aktif = (int)($_POST['status_aktif'] ?? 0);
+    $tanggal_selesai = $_POST['tanggal_selesai'] ?? '';
+    $status_aktif = $_POST['status_aktif'] ?? 'Aktif';
 
     if (
         $siswa_id <= 0 ||
         $tahun_ajaran_id <= 0 ||
         $kelas_id <= 0 ||
-        $tanggal_mulai === '' ||
-        !in_array($status_aktif, [0, 1], true)
+        $tanggal_mulai == ''
     ) {
-        $_SESSION['pesan_error'] = 'Semua data wajib diisi dengan benar.';
+        $error = "Semua data wajib diisi kecuali tanggal selesai.";
+
     } elseif (
-        $tanggal_selesai !== null &&
+        $tanggal_selesai != '' &&
         $tanggal_selesai < $tanggal_mulai
     ) {
-        $_SESSION['pesan_error'] = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
+        $error = "Tanggal selesai tidak boleh sebelum tanggal mulai.";
+
     } else {
 
-        $stmt = mysqli_prepare($koneksi, "
-            INSERT INTO t_kelas_siswa
-            (siswa_id, tahun_ajaran_id, kelas_id,
-             tanggal_mulai, tanggal_selesai, status_aktif)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
+        // CEK SISWA
+        $cek_siswa = mysqli_prepare(
+            $koneksi,
+            "SELECT id FROM t_siswa WHERE id = ?"
+        );
 
-        if ($stmt) {
+        mysqli_stmt_bind_param($cek_siswa, "i", $siswa_id);
+        mysqli_stmt_execute($cek_siswa);
+        mysqli_stmt_store_result($cek_siswa);
 
-            mysqli_stmt_bind_param(
-                $stmt,
-                "iiissi",
-                $siswa_id,
-                $tahun_ajaran_id,
-                $kelas_id,
-                $tanggal_mulai,
-                $tanggal_selesai,
-                $status_aktif
-            );
+        if (mysqli_stmt_num_rows($cek_siswa) == 0) {
 
-            if (mysqli_stmt_execute($stmt)) {
-                $_SESSION['pesan_sukses'] =
-                    'Penempatan siswa berhasil ditambahkan!';
-            } else {
-                $_SESSION['pesan_error'] =
-                    'Gagal menyimpan: ' . mysqli_stmt_error($stmt);
-            }
-
-            mysqli_stmt_close($stmt);
+            $error = "Siswa tidak ditemukan. Silakan pilih siswa kembali.";
 
         } else {
-            $_SESSION['pesan_error'] =
-                'Query gagal: ' . mysqli_error($koneksi);
+
+            // CEK PENEMPATAN GANDA
+            $cek = mysqli_prepare(
+                $koneksi,
+                "SELECT id
+                 FROM t_kelas_siswa
+                 WHERE siswa_id = ?
+                 AND tahun_ajaran_id = ?"
+            );
+
+            mysqli_stmt_bind_param(
+                $cek,
+                "ii",
+                $siswa_id,
+                $tahun_ajaran_id
+            );
+
+            mysqli_stmt_execute($cek);
+            mysqli_stmt_store_result($cek);
+
+            if (mysqli_stmt_num_rows($cek) > 0) {
+
+                $error = "Siswa sudah memiliki penempatan pada tahun ajaran tersebut.";
+
+            } else {
+
+                // INSERT PENEMPATAN
+                $sql_insert = "
+                    INSERT INTO t_kelas_siswa
+                    (
+                        siswa_id,
+                        tahun_ajaran_id,
+                        kelas_id,
+                        tanggal_mulai,
+                        tanggal_selesai,
+                        status_aktif
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ";
+
+                $stmt = mysqli_prepare($koneksi, $sql_insert);
+
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    "iiisss",
+                    $siswa_id,
+                    $tahun_ajaran_id,
+                    $kelas_id,
+                    $tanggal_mulai,
+                    $tanggal_selesai,
+                    $status_aktif
+                );
+
+                if (mysqli_stmt_execute($stmt)) {
+
+                    header("Location: penempatan_siswa.php?pesan=tambah_berhasil");
+                    exit;
+
+                } else {
+
+                    $error = "Gagal menyimpan penempatan: " .
+                             mysqli_error($koneksi);
+                }
+            }
         }
     }
-
-    header("Location: penempatan_siswa.php");
-    exit;
 }
 
 // ==========================================
-// TAMPILKAN FORM TAMBAH
+// AMBIL DATA SISWA
 // ==========================================
 
-$tampilkan_form = isset($_GET['tambah']);
+$query_siswa = mysqli_query(
+    $koneksi,
+    "SELECT id, nis, nama
+     FROM t_siswa
+     ORDER BY nama ASC"
+);
+
+if (!$query_siswa) {
+    die("Gagal mengambil data siswa: " . mysqli_error($koneksi));
+}
 
 // ==========================================
-// AMBIL DATA DROPDOWN
+// AMBIL DATA TAHUN AJARAN
 // ==========================================
 
-if ($tampilkan_form) {
+$query_tahun = mysqli_query(
+    $koneksi,
+    "SELECT id, nama
+     FROM t_tahun_ajaran
+     ORDER BY tanggal_mulai DESC"
+);
 
-    $query_siswa = mysqli_query($koneksi, "
-        SELECT id, nis, nama
-        FROM t_siswa
-        WHERE status_aktif = 1
-        ORDER BY nama ASC
-    ");
+if (!$query_tahun) {
+    die("Gagal mengambil tahun ajaran: " . mysqli_error($koneksi));
+}
 
-    $query_tahun = mysqli_query($koneksi, "
-        SELECT id, nama
-        FROM t_tahun_ajaran
-        ORDER BY id DESC
-    ");
+// ==========================================
+// AMBIL DATA KELAS
+// ==========================================
 
-    $query_kelas = mysqli_query($koneksi, "
-        SELECT id, nama, tingkat, jurusan
-        FROM t_kelas
-        ORDER BY nama ASC
-    ");
+$query_kelas = mysqli_query(
+    $koneksi,
+    "SELECT id, nama
+     FROM t_kelas
+     ORDER BY nama ASC"
+);
 
+if (!$query_kelas) {
+    die("Gagal mengambil data kelas: " . mysqli_error($koneksi));
 }
 
 // ==========================================
 // AMBIL DATA PENEMPATAN
 // ==========================================
 
-$sql = "SELECT
-            ks.id,
-            s.nis,
-            s.nama AS nama_siswa,
-            ta.nama AS tahun_ajaran,
-            k.nama AS nama_kelas,
-            k.tingkat,
-            k.jurusan,
-            ks.tanggal_mulai,
-            ks.tanggal_selesai,
-            ks.status_aktif
-        FROM t_kelas_siswa ks
-        LEFT JOIN t_siswa s ON ks.siswa_id = s.id
-        LEFT JOIN t_tahun_ajaran ta ON ks.tahun_ajaran_id = ta.id
-        LEFT JOIN t_kelas k ON ks.kelas_id = k.id
-        ORDER BY ks.id DESC";
+$sql_data = "
+    SELECT
+        ks.id,
+        s.nis,
+        s.nama AS nama_siswa,
+        ta.nama AS tahun_ajaran,
+        k.nama AS nama_kelas,
+        ks.tanggal_mulai,
+        ks.tanggal_selesai,
+        ks.status_aktif
+    FROM t_kelas_siswa ks
+    LEFT JOIN t_siswa s
+        ON ks.siswa_id = s.id
+    LEFT JOIN t_tahun_ajaran ta
+        ON ks.tahun_ajaran_id = ta.id
+    LEFT JOIN t_kelas k
+        ON ks.kelas_id = k.id
+    ORDER BY ks.id DESC
+";
 
-$hasil = mysqli_query($koneksi, $sql);
+$hasil = mysqli_query($koneksi, $sql_data);
 
 if (!$hasil) {
-    die("Query gagal: " . mysqli_error($koneksi));
+    die("Query penempatan gagal: " . mysqli_error($koneksi));
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penempatan Siswa - SIPENSIS</title>
 
-<title>Penempatan Siswa - SIPENSIS</title>
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 
-<!-- BOOTSTRAP -->
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<!-- BOOTSTRAP ICONS -->
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
 
-<!-- DATATABLES -->
-<link rel="stylesheet"
-href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            width: 100%;
+        }
 
-* {
-    box-sizing: border-box;
-}
+        body {
+            background: #f4f5f7;
+            font-family: Arial, sans-serif;
+            color: #212529;
+            overflow-x: hidden;
+        }
 
-body {
-    margin: 0;
-    padding: 0;
-    background: #f4f5f7;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    color: #212529;
-    overflow-x: hidden;
-}
+        /* =====================================
+           SIDEBAR
+        ===================================== */
 
-/* =================================
-   LAYOUT SIDEBAR
-================================= */
+        #sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
 
-.layout-wrapper {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-}
+            width: 208px !important;
+            min-width: 208px !important;
+            max-width: 208px !important;
 
-#sidebar {
-    flex-shrink: 0;
-}
+            height: 100vh !important;
+            min-height: 100vh !important;
 
-/* =================================
-   KONTEN UTAMA
-================================= */
+            background: #1b1f22 !important;
+            color: #ffffff !important;
 
-.dashboard-content {
-    flex: 1;
-    min-width: 0;
-    padding: 25px;
-    min-height: 100vh;
-    background: #f4f5f7;
-}
+            z-index: 1000 !important;
 
-/* =================================
-   JUDUL
-================================= */
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
 
-.judul-halaman {
-    font-size: 26px;
-    font-weight: 700;
-    color: #212529;
-    margin-bottom: 5px;
-}
+            padding: 0 !important;
+        }
 
-.deskripsi-halaman {
-    color: #6c757d;
-    font-size: 14px;
-    margin-bottom: 22px;
-}
+        /* AREA BRAND SIDEBAR */
+        #sidebar .sidebar-header,
+        #sidebar .brand,
+        #sidebar .sidebar-brand {
+            padding: 22px 15px 15px !important;
+            color: #ffffff !important;
+        }
 
-/* =================================
-   CARD
-================================= */
+        #sidebar h4,
+        #sidebar h5,
+        #sidebar .sidebar-title,
+        #sidebar .brand {
+            color: #ffffff !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
 
-.card {
-    border: none;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-    background: white;
-}
+        #sidebar small,
+        #sidebar p {
+            font-size: 10px;
+            color: #adb5bd;
+        }
 
-.card-header {
-    background: white;
-    padding: 17px 20px;
-    border-bottom: 1px solid #dee2e6;
-}
+        #sidebar hr {
+            border-top: 1px solid #454d55;
+            margin: 15px 10px;
+        }
 
-.judul-card {
-    font-size: 17px;
-    font-weight: 700;
-    margin: 0;
-}
+        /* MENU SIDEBAR */
+        #sidebar a {
+            display: flex !important;
+            align-items: center !important;
 
-.card-body {
-    padding: 22px;
-}
+            width: calc(100% - 20px) !important;
+            min-height: 34px;
 
-/* =================================
-   FORM
-================================= */
+            margin: 3px 10px !important;
+            padding: 8px 10px !important;
 
-.form-group {
-    margin-bottom: 18px;
-}
+            color: #e9ecef !important;
+            font-size: 10px !important;
+            font-weight: 500 !important;
 
-.form-group label {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 8px;
-}
+            text-decoration: none !important;
+            border-radius: 7px !important;
 
-.form-control {
-    height: 42px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 13px;
-}
+            transition: background .2s ease;
+        }
 
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,.12);
-}
+        #sidebar a i {
+            width: 17px;
+            min-width: 17px;
+            margin-right: 7px;
+            font-size: 12px;
+            text-align: center;
+        }
 
-/* =================================
-   TOMBOL
-================================= */
+        #sidebar a:hover {
+            background: #343a40 !important;
+            color: #ffffff !important;
+        }
 
-.btn-black {
-    background: #212529;
-    border: 1px solid #212529;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-}
+        /* MENU AKTIF */
+        #sidebar a.active,
+        #sidebar a.menu-active,
+        #sidebar .active > a {
+            background: #0d6efd !important;
+            color: #ffffff !important;
+        }
 
-.btn-black:hover {
-    background: #000;
-    color: white;
-}
+        /* LOGOUT */
+        #sidebar a[href*="logout"] {
+            color: #ff4d5a !important;
+            font-weight: 600 !important;
+        }
 
-.btn-kembali {
-    background: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
+        /* =====================================
+           KONTEN UTAMA
+        ===================================== */
 
-.btn-kembali:hover {
-    background: #545b62;
-    color: white;
-}
+        .content-area {
+            position: relative !important;
 
-/* =================================
-   TABEL
-================================= */
+            display: block !important;
 
-#tabelPenempatan {
-    width: 100% !important;
-    font-size: 12px;
-}
+            margin-left: 208px !important;
+            width: calc(100% - 208px) !important;
 
-#tabelPenempatan thead th {
-    background: #212529;
-    color: white;
-    font-weight: 700;
-    padding: 13px 10px;
-    vertical-align: middle;
-    white-space: nowrap;
-}
+            min-height: 100vh;
+            padding: 15px 18px !important;
 
-#tabelPenempatan tbody td {
-    padding: 12px 10px;
-    vertical-align: middle;
-}
+            background: #f4f5f7;
+        }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background: #f1f1f1;
-}
+        .judul-halaman {
+            font-size: 21px;
+            font-weight: 700;
+            color: #212529;
+            margin: 0 0 5px;
+        }
 
-.table-bordered th,
-.table-bordered td {
-    border: 1px solid #dee2e6;
-}
+        .deskripsi {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 17px;
+        }
 
-.badge {
-    padding: 6px 9px;
-    font-size: 11px;
-}
+        /* =====================================
+           CARD
+        ===================================== */
 
-/* =================================
-   DATATABLES
-================================= */
+        .card {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            overflow: hidden;
+        }
 
-.dataTables_wrapper {
-    font-size: 13px;
-}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
 
-/* Pencarian di sebelah kiri */
-.dataTables_wrapper .dataTables_filter {
-    text-align: left !important;
-    margin-bottom: 15px;
-}
+            background: #ffffff;
+            border-bottom: 1px solid #dee2e6;
 
-.dataTables_wrapper .dataTables_filter label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: flex-start;
-    margin: 0;
-}
+            padding: 13px 15px;
+            min-height: 47px;
+        }
 
-.dataTables_wrapper .dataTables_filter input {
-    height: 35px;
-    width: 185px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    padding: 5px 10px;
-    margin-left: 0 !important;
-    outline: none;
-}
+        .card-header h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #212529;
+            margin: 0;
+        }
 
-/* Tampilkan data di sebelah kanan */
-.dataTables_wrapper .dataTables_length {
-    text-align: right;
-    margin-bottom: 15px;
-}
+        .card-body {
+            padding: 15px;
+        }
 
-.dataTables_wrapper .dataTables_length label {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    margin: 0;
-    white-space: nowrap;
-}
+        /* =====================================
+           FORM
+        ===================================== */
 
-.dataTables_wrapper .dataTables_length select {
-    width: 60px !important;
-    height: 35px;
-    padding: 4px 8px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    background: white;
-}
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-/* Pagination */
-.dataTables_wrapper .page-item.active .page-link {
-    background: #212529;
-    border-color: #212529;
-}
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
 
-.dataTables_wrapper .page-link {
-    color: #212529;
-}
+        .form-control {
+            height: 35px;
+            font-size: 11px;
+            border-radius: 5px;
+        }
 
-/* =================================
-   RESPONSIVE
-================================= */
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,.12);
+        }
 
-@media(max-width: 768px) {
+        /* =====================================
+           TOMBOL
+        ===================================== */
 
-    .layout-wrapper {
-        flex-direction: column;
-    }
+        .btn {
+            font-size: 11px;
+            border-radius: 3px;
+            padding: 6px 10px;
+        }
 
-    .dashboard-content {
-        padding: 15px;
-    }
+        .btn-tambah,
+        .btn-simpan {
+            background: #212529;
+            border: 1px solid #212529;
+            color: #ffffff;
+        }
 
-    .judul-halaman {
-        font-size: 22px;
-    }
+        .btn-tambah:hover,
+        .btn-simpan:hover {
+            background: #000000;
+            color: #ffffff;
+        }
 
-    .card-body {
-        padding: 15px;
-    }
+        .btn-kembali {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: #ffffff;
+        }
 
-    .dataTables_wrapper .dataTables_filter,
-    .dataTables_wrapper .dataTables_length {
-        text-align: left;
-        margin-bottom: 12px;
-    }
+        .btn-kembali:hover {
+            background: #545b62;
+            color: #ffffff;
+        }
 
-    .dataTables_wrapper .dataTables_filter input {
-        width: 150px;
-    }
-}
+        .btn-edit {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
 
-@media print {
+        .btn-hapus {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: #ffffff;
+        }
 
-    .d-print-none {
-        display: none !important;
-    }
+        .btn-aksi {
+            padding: 4px 7px;
+            font-size: 10px;
+        }
 
-    .dashboard-content {
-        padding: 0;
-    }
-}
+        /* =====================================
+           TABEL
+        ===================================== */
 
-</style>
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
 
+        #tabelPenempatan {
+            width: 100% !important;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        #tabelPenempatan thead th {
+            background: #212529;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 11px 9px;
+            white-space: nowrap;
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+        }
+
+        #tabelPenempatan tbody td {
+            padding: 10px 9px;
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+        }
+
+        #tabelPenempatan tbody tr:nth-child(odd) {
+            background: #f1f1f1;
+        }
+
+        #tabelPenempatan tbody tr:nth-child(even) {
+            background: #ffffff;
+        }
+
+        #tabelPenempatan tbody tr:hover {
+            background: #e9ecef;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 5px 7px;
+            font-size: 10px;
+            border-radius: 4px;
+        }
+
+        /* =====================================
+           DATATABLES
+        ===================================== */
+
+        .dataTables_wrapper {
+            width: 100%;
+            font-size: 11px;
+        }
+
+        .dataTables_filter input {
+            height: 30px;
+            font-size: 11px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 5px 8px;
+        }
+
+        .dataTables_length select {
+            height: 30px;
+            font-size: 11px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        .dataTables_info {
+            font-size: 11px;
+            padding-top: 10px !important;
+        }
+
+        .dataTables_paginate {
+            font-size: 11px;
+        }
+
+        .page-link {
+            font-size: 11px;
+            color: #212529;
+        }
+
+        .page-item.active .page-link {
+            background: #212529;
+            border-color: #212529;
+            color: #ffffff;
+        }
+
+        .alert {
+            font-size: 11px;
+        }
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+
+        @media (max-width: 768px) {
+
+            #sidebar {
+                width: 0 !important;
+                min-width: 0 !important;
+                max-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            .content-area {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 15px !important;
+            }
+
+            .judul-halaman {
+                font-size: 19px;
+            }
+
+            .card-header {
+                padding: 12px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .card-body {
+                padding: 12px;
+            }
+
+            .dataTables_wrapper .dataTables_filter {
+                text-align: left;
+            }
+
+            .dataTables_wrapper .dataTables_filter input {
+                max-width: 100%;
+            }
+
+            .dataTables_wrapper .dataTables_paginate {
+                overflow-x: auto;
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="layout-wrapper">
+<!-- =====================================
+     SIDEBAR
+===================================== -->
 
-    <!-- SIDEBAR -->
-    <?php include 'layout/sidebar.php'; ?>
+<?php include 'layout/sidebar.php'; ?>
 
-    <!-- KONTEN UTAMA -->
-    <main class="dashboard-content">
+<!-- =====================================
+     KONTEN UTAMA
+===================================== -->
 
-        <!-- JUDUL -->
-        <h3 class="judul-halaman">
-            <i class="bi bi-person-lines-fill"></i>
-            Penempatan Siswa
-        </h3>
+<main class="content-area">
 
-        <p class="deskripsi-halaman">
-            Kelola data penempatan siswa berdasarkan tahun ajaran dan kelas.
-        </p>
+    <h3 class="judul-halaman">
+        <i class="bi bi-people-fill mr-1"></i>
+        Penempatan Siswa
+    </h3>
 
-        <!-- TOMBOL KEMBALI -->
-        <a href="dashboard.php"
-           class="btn btn-kembali btn-sm mb-3 d-print-none">
+    <p class="deskripsi">
+        Kelola data penempatan siswa berdasarkan tahun ajaran dan kelas.
+    </p>
 
-            <i class="bi bi-arrow-left"></i>
-            Kembali ke Dashboard
+    <!-- NOTIFIKASI -->
+    <?php if ($pesan == 'tambah_berhasil') { ?>
 
-        </a>
+        <div class="alert alert-success alert-dismissible fade show">
+            Penempatan siswa berhasil ditambahkan.
 
-        <!-- NOTIFIKASI -->
-        <?php if (isset($_SESSION['pesan_sukses'])) { ?>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
 
-            <div class="alert alert-success alert-dismissible fade show">
+    <?php } ?>
 
-                <?= htmlspecialchars($_SESSION['pesan_sukses']); ?>
-
-                <button type="button" class="close" data-dismiss="alert">
-                    <span>&times;</span>
-                </button>
-
-            </div>
-
-        <?php unset($_SESSION['pesan_sukses']); } ?>
-
-
-        <?php if (isset($_SESSION['pesan_error'])) { ?>
-
-            <div class="alert alert-danger alert-dismissible fade show">
-
-                <?= htmlspecialchars($_SESSION['pesan_error']); ?>
-
-                <button type="button" class="close" data-dismiss="alert">
-                    <span>&times;</span>
-                </button>
-
-            </div>
-
-        <?php unset($_SESSION['pesan_error']); } ?>
-
-
-        <!-- =================================
-             FORM TAMBAH PENEMPATAN
-        ================================== -->
-
-        <?php if ($tampilkan_form) { ?>
+    <!-- MODE TAMBAH -->
+    <?php if ($mode_tambah) { ?>
 
         <div class="card">
 
             <div class="card-header">
-
-                <h5 class="judul-card">
+                <h5>
                     <i class="bi bi-plus-circle mr-2"></i>
                     Form Tambah Penempatan Siswa
                 </h5>
-
             </div>
 
             <div class="card-body">
 
                 <a href="penempatan_siswa.php"
-                   class="btn btn-kembali btn-sm mb-4">
+                   class="btn btn-kembali mb-3">
 
                     <i class="bi bi-arrow-left"></i>
                     Kembali
 
                 </a>
 
-                <form method="POST" action="penempatan_siswa.php">
+                <?php if ($error != '') { ?>
 
-                    <!-- SISWA -->
+                    <div class="alert alert-danger">
+                        <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
+                    </div>
+
+                <?php } ?>
+
+                <form method="POST"
+                      action="penempatan_siswa.php?tambah=1">
+
+                    <!-- NAMA SISWA -->
                     <div class="form-group">
 
                         <label>Nama Siswa</label>
@@ -550,14 +713,20 @@ body {
                                 class="form-control"
                                 required>
 
-                            <option value="">-- Pilih Siswa --</option>
+                            <option value="">
+                                -- Pilih Siswa --
+                            </option>
 
-                            <?php while ($s = mysqli_fetch_assoc($query_siswa)) { ?>
+                            <?php while ($siswa = mysqli_fetch_assoc($query_siswa)) { ?>
 
-                                <option value="<?= (int)$s['id']; ?>">
+                                <option value="<?= (int)$siswa['id']; ?>"
+                                    <?= (
+                                        isset($_POST['siswa_id']) &&
+                                        (int)$_POST['siswa_id'] === (int)$siswa['id']
+                                    ) ? 'selected' : ''; ?>>
 
                                     <?= htmlspecialchars(
-                                        $s['nis'] . ' - ' . $s['nama'],
+                                        $siswa['nis'] . ' - ' . $siswa['nama'],
                                         ENT_QUOTES,
                                         'UTF-8'
                                     ); ?>
@@ -567,6 +736,10 @@ body {
                             <?php } ?>
 
                         </select>
+
+                        <small class="text-muted">
+                            Pilihan siswa diambil langsung dari tabel t_siswa.
+                        </small>
 
                     </div>
 
@@ -579,13 +752,23 @@ body {
                                 class="form-control"
                                 required>
 
-                            <option value="">-- Pilih Tahun Ajaran --</option>
+                            <option value="">
+                                -- Pilih Tahun Ajaran --
+                            </option>
 
-                            <?php while ($ta = mysqli_fetch_assoc($query_tahun)) { ?>
+                            <?php while ($tahun = mysqli_fetch_assoc($query_tahun)) { ?>
 
-                                <option value="<?= (int)$ta['id']; ?>">
+                                <option value="<?= (int)$tahun['id']; ?>"
+                                    <?= (
+                                        isset($_POST['tahun_ajaran_id']) &&
+                                        (int)$_POST['tahun_ajaran_id'] === (int)$tahun['id']
+                                    ) ? 'selected' : ''; ?>>
 
-                                    <?= htmlspecialchars($ta['nama']); ?>
+                                    <?= htmlspecialchars(
+                                        $tahun['nama'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
 
                                 </option>
 
@@ -604,16 +787,22 @@ body {
                                 class="form-control"
                                 required>
 
-                            <option value="">-- Pilih Kelas --</option>
+                            <option value="">
+                                -- Pilih Kelas --
+                            </option>
 
-                            <?php while ($k = mysqli_fetch_assoc($query_kelas)) { ?>
+                            <?php while ($kelas = mysqli_fetch_assoc($query_kelas)) { ?>
 
-                                <option value="<?= (int)$k['id']; ?>">
+                                <option value="<?= (int)$kelas['id']; ?>"
+                                    <?= (
+                                        isset($_POST['kelas_id']) &&
+                                        (int)$_POST['kelas_id'] === (int)$kelas['id']
+                                    ) ? 'selected' : ''; ?>>
 
                                     <?= htmlspecialchars(
-                                        $k['nama'] . ' - ' .
-                                        $k['tingkat'] . ' - ' .
-                                        $k['jurusan']
+                                        $kelas['nama'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
                                     ); ?>
 
                                 </option>
@@ -632,6 +821,7 @@ body {
                         <input type="date"
                                name="tanggal_mulai"
                                class="form-control"
+                               value="<?= htmlspecialchars($_POST['tanggal_mulai'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                required>
 
                     </div>
@@ -643,21 +833,22 @@ body {
 
                         <input type="date"
                                name="tanggal_selesai"
-                               class="form-control">
+                               class="form-control"
+                               value="<?= htmlspecialchars($_POST['tanggal_selesai'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 
                     </div>
 
                     <!-- STATUS -->
                     <div class="form-group">
 
-                        <label>Status Penempatan</label>
+                        <label>Status Aktif</label>
 
                         <select name="status_aktif"
                                 class="form-control"
                                 required>
 
-                            <option value="1">Aktif</option>
-                            <option value="0">Tidak Aktif</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Tidak Aktif">Tidak Aktif</option>
 
                         </select>
 
@@ -665,58 +856,44 @@ body {
 
                     <hr>
 
-                    <!-- TOMBOL -->
-                    <div class="d-flex justify-content-between">
+                    <button type="submit"
+                            name="simpan"
+                            class="btn btn-simpan">
 
-                        <a href="penempatan_siswa.php"
-                           class="btn btn-kembali px-4">
+                        <i class="bi bi-save mr-1"></i>
+                        Simpan Penempatan
 
-                            <i class="bi bi-arrow-left"></i>
-                            Kembali
+                    </button>
 
-                        </a>
+                    <a href="penempatan_siswa.php"
+                       class="btn btn-kembali">
 
-                        <button type="submit"
-                                name="simpan_penempatan"
-                                class="btn btn-black px-4">
+                        Batal
 
-                            <i class="bi bi-save"></i>
-                            Simpan Penempatan
-
-                        </button>
-
-                    </div>
+                    </a>
 
                 </form>
 
             </div>
-
         </div>
 
-        <?php } else { ?>
+    <?php } else { ?>
 
-
-        <!-- =================================
-             TABEL DATA PENEMPATAN
-             HANYA TAMPIL JIKA BUKAN FORM TAMBAH
-        ================================== -->
-
+        <!-- MODE DAFTAR -->
         <div class="card">
 
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header">
 
-                <h5 class="judul-card">
-
-                    <i class="bi bi-people-fill mr-2"></i>
+                <h5>
+                    <i class="bi bi-list-ul mr-2"></i>
                     Data Penempatan Siswa
-
                 </h5>
 
                 <a href="penempatan_siswa.php?tambah=1"
-                   class="btn btn-black btn-sm d-print-none">
+                   class="btn btn-tambah">
 
-                    <i class="bi bi-plus-lg"></i>
-                    Tambah Penempatan
+                    <i class="bi bi-plus-lg mr-1"></i>
+                    Tambah Penempatan Siswa
 
                 </a>
 
@@ -724,112 +901,100 @@ body {
 
             <div class="card-body">
 
+                <a href="dashboard.php"
+                   class="btn btn-kembali mb-3">
+
+                    <i class="bi bi-arrow-left mr-1"></i>
+                    Kembali ke Dashboard
+
+                </a>
+
                 <div class="table-responsive">
 
                     <table id="tabelPenempatan"
-                           class="table table-striped table-bordered table-hover">
+                           class="table table-bordered table-striped table-hover">
 
                         <thead>
-
                             <tr>
                                 <th>No.</th>
                                 <th>NIS</th>
                                 <th>Nama Siswa</th>
                                 <th>Tahun Ajaran</th>
                                 <th>Kelas</th>
-                                <th>Tingkat</th>
-                                <th>Jurusan</th>
                                 <th>Tanggal Mulai</th>
                                 <th>Tanggal Selesai</th>
                                 <th>Status</th>
-                                <th>Aksi</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
 
-                            <?php $no = 1; ?>
+                            <?php
+                            $no = 1;
 
-                            <?php while ($row = mysqli_fetch_assoc($hasil)) { ?>
+                            while ($row = mysqli_fetch_assoc($hasil)) {
+                            ?>
 
                             <tr>
 
                                 <td><?= $no++; ?></td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['nis'] ?? '-'); ?>
+                                    <?= htmlspecialchars(
+                                        $row['nis'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <strong>
-                                        <?= htmlspecialchars($row['nama_siswa'] ?? '-'); ?>
-                                    </strong>
+                                    <?= htmlspecialchars(
+                                        $row['nama_siswa'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['tahun_ajaran'] ?? '-'); ?>
+                                    <?= htmlspecialchars(
+                                        $row['tahun_ajaran'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['nama_kelas'] ?? '-'); ?>
+                                    <?= htmlspecialchars(
+                                        $row['nama_kelas'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['tingkat'] ?? '-'); ?>
+                                    <?= htmlspecialchars(
+                                        $row['tanggal_mulai'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['jurusan'] ?? '-'); ?>
+                                    <?= htmlspecialchars(
+                                        $row['tanggal_selesai'] ?? '-',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($row['tanggal_mulai'] ?? '-'); ?>
-                                </td>
-
-                                <td>
-                                    <?= htmlspecialchars($row['tanggal_selesai'] ?? '-'); ?>
-                                </td>
-
-                                <td>
-
-                                    <?php if ((int)$row['status_aktif'] === 1) { ?>
-
-                                        <span class="badge badge-success">
-                                            Aktif
-                                        </span>
-
-                                    <?php } else { ?>
-
-                                        <span class="badge badge-danger">
-                                            Tidak Aktif
-                                        </span>
-
-                                    <?php } ?>
-
-                                </td>
-
-                                <td style="white-space:nowrap;">
-
-                                    <!-- EDIT -->
-                                    <a href="edit_penempatan.php?id=<?= (int)$row['id']; ?>"
-                                       class="btn btn-warning btn-sm text-white"
-                                       title="Edit">
-
-                                        <i class="bi bi-pencil-square"></i>
-
-                                    </a>
-
-                                    <!-- HAPUS -->
-                                    <a href="hapus_penempatan.php?id=<?= (int)$row['id']; ?>"
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Yakin ingin menghapus data penempatan ini?')"
-                                       title="Hapus">
-
-                                        <i class="bi bi-trash"></i>
-
-                                    </a>
-
+                                    <span class="badge badge-success badge-status">
+                                        <?= htmlspecialchars(
+                                            $row['status_aktif'] ?? '-',
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ); ?>
+                                    </span>
                                 </td>
 
                             </tr>
@@ -841,21 +1006,16 @@ body {
                     </table>
 
                 </div>
-
             </div>
-
         </div>
 
-        <?php } ?>
+    <?php } ?>
 
-    </main>
+</main>
 
-</div>
-
-
-<!-- =================================
+<!-- =====================================
      JAVASCRIPT
-================================= -->
+===================================== -->
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
@@ -866,59 +1026,39 @@ body {
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
+$(document).ready(function () {
 
-$(document).ready(function() {
-
-    // Jalankan DataTables hanya jika tabel tersedia
     if ($('#tabelPenempatan').length) {
 
         $('#tabelPenempatan').DataTable({
 
-            // CARI KIRI, TAMPILKAN DATA KANAN
-            dom:
-                '<"row mb-3"' +
-                    '<"col-sm-6"f>' +
-                    '<"col-sm-6"l>' +
-                '>' +
-                'rt' +
-                '<"row mt-3"' +
-                    '<"col-sm-6"i>' +
-                    '<"col-sm-6"p>' +
-                '>',
-
             language: {
-
                 search: "Cari:",
+                searchPlaceholder: "Masukkan nama siswa atau kelas...",
 
                 lengthMenu: "Tampilkan _MENU_ data",
 
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data penempatan",
 
-                infoEmpty: "Tidak ada data",
+                infoEmpty: "Tidak ada data penempatan",
 
                 infoFiltered: "(difilter dari _MAX_ total data)",
 
-                zeroRecords: "Data tidak ditemukan",
+                zeroRecords: "Data penempatan tidak ditemukan",
 
                 emptyTable: "Belum ada data penempatan",
 
                 paginate: {
-
                     first: "Pertama",
-
                     last: "Terakhir",
-
                     next: "Berikutnya",
-
                     previous: "Sebelumnya"
-
                 }
-
             },
 
             pageLength: 10,
 
-            lengthMenu: [5, 10, 25, 50],
+            lengthMenu: [5, 10, 25, 50, 100],
 
             ordering: true,
 
@@ -926,25 +1066,13 @@ $(document).ready(function() {
 
             paging: true,
 
-            autoWidth: false,
-
-            columnDefs: [
-
-                {
-                    targets: [0, 10],
-                    orderable: false
-                }
-
-            ],
-
-            order: [[2, 'asc']]
+            autoWidth: false
 
         });
 
     }
 
 });
-
 </script>
 
 </body>

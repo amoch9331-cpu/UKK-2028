@@ -1,8 +1,21 @@
 
 <?php
-session_start();
-include "config/koneksi.php";
+// ==========================================
+// ABOUT ME - ADMIN
+// ==========================================
 
+include 'includes/cek_session.php';
+include 'config/koneksi.php';
+
+// CEK ROLE ADMIN
+$role = strtolower(trim($_SESSION['role'] ?? ''));
+
+if ($role !== 'admin') {
+    header("Location: dashboard.php");
+    exit;
+}
+
+// DATA PROFIL
 $nama = "MUHAMMAD ADNAN";
 $kelas = "XII RPL 2";
 $sekolah = "SMK Muhammadiyah Tasikmalaya";
@@ -19,144 +32,148 @@ $foto = "assets/foto-profil.jpg";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me</title>
+
+    <title>About Me - Pelanggaran Siswa</title>
+
+    <!-- BOOTSTRAP 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- BOOTSTRAP ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <style>
         * {
             box-sizing: border-box;
         }
 
+        /* ==================================
+           BODY
+        ================================== */
+
+        html,
         body {
-            margin: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100%;
+            min-height: 100%;
+            background: #f4f5f7;
             font-family: Arial, sans-serif;
-            background: #f5f6fa;
+            color: #212529;
+            overflow-x: hidden;
+        }
+
+        /* ==================================
+           SIDEBAR
+        ================================== */
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        /* ==================================
+           KONTEN UTAMA
+           TEPAT DI SAMPING SIDEBAR
+        ================================== */
+
+        .main-content {
+            position: relative;
+            margin-left: 260px !important;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+            padding: 22px 25px;
+            background: #f4f5f7;
+        }
+
+        /* ==================================
+           JUDUL
+        ================================== */
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
             color: #212529;
         }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 289px;
-            height: 100vh;
-            background: #343a40;
-            position: fixed;
-            padding: 15px;
-            top: 0;
-            left: 0;
-            overflow-y: auto;
+        .page-description {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 20px;
         }
 
-        .sidebar h2 {
-            color: white;
-            font-size: 22px;
-            font-weight: normal;
-            margin: 0 0 25px;
-        }
+        /* ==================================
+           CARD
+        ================================== */
 
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 11px 14px;
-            margin-bottom: 5px;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #087df1;
-        }
-
-        .sidebar .logout {
-            color: #ff4757;
-            margin-top: 20px;
-        }
-
-        /* MAIN CONTENT */
-        .main {
-            margin-left: 289px;
-            padding: 25px 22px;
-            width: calc(100% - 289px);
-            min-height: 100vh;
-        }
-
-        .main h1 {
-            margin: 0 0 7px;
-            font-size: 26px;
-            font-weight: bold;
-        }
-
-        .breadcrumb {
-            margin-bottom: 24px;
-            color: #63758b;
-            font-size: 14px;
-        }
-
-        .breadcrumb a {
-            color: #63758b;
-            text-decoration: none;
-        }
-
-        /* CARD UTAMA */
-        .card {
+        .profile-card {
             width: 100%;
-            background: white;
+            background: #fff;
+            border: none;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
 
-        /* HEADER CARD */
-        .card-header {
-            padding: 17px 20px;
+        .profile-header {
+            padding: 18px 22px;
             border-bottom: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: #fff;
         }
 
-        .card-header h3 {
+        .profile-header h5 {
             margin: 0;
             font-size: 16px;
             font-weight: bold;
         }
 
-        /* ISI CARD */
-        .card-body {
-            padding: 18px;
+        .profile-body {
+            padding: 25px;
         }
 
-        /* TOMBOL KEMBALI */
+        /* ==================================
+           TOMBOL KEMBALI
+        ================================== */
+
         .btn-kembali {
             display: inline-block;
             background: #6c757d;
             color: white;
             text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 9px 14px;
+            border-radius: 6px;
             font-size: 13px;
             margin-bottom: 25px;
+            transition: 0.2s;
         }
 
         .btn-kembali:hover {
-            background: #5a6268;
+            background: #545b62;
+            color: white;
         }
 
-        /* PROFILE */
+        /* ==================================
+           PROFIL UTAMA
+        ================================== */
+
         .profile {
             display: flex;
             align-items: center;
-            gap: 22px;
-            padding: 20px;
+            gap: 25px;
+            padding: 25px;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 25px;
+            border-radius: 10px;
+            margin-bottom: 28px;
         }
 
         .avatar {
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             background: #e6efff;
             color: #087df1;
@@ -167,6 +184,8 @@ $foto = "assets/foto-profil.jpg";
             font-weight: bold;
             overflow: hidden;
             flex-shrink: 0;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .avatar img {
@@ -176,8 +195,9 @@ $foto = "assets/foto-profil.jpg";
         }
 
         .profile h2 {
-            margin: 0 0 8px;
             font-size: 23px;
+            font-weight: bold;
+            margin: 0 0 8px;
         }
 
         .profile p {
@@ -186,31 +206,34 @@ $foto = "assets/foto-profil.jpg";
             font-size: 14px;
         }
 
-        /* INFORMASI PRIBADI */
+        /* ==================================
+           INFORMASI PRIBADI
+        ================================== */
+
         .section-title {
-            font-size: 17px;
-            margin: 0 0 17px;
+            font-size: 18px;
             font-weight: bold;
+            margin-bottom: 18px;
         }
 
         .info {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 15px;
         }
 
         .item {
-            padding: 18px;
+            padding: 20px;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 7px;
-            min-height: 85px;
+            border-radius: 8px;
+            min-height: 90px;
         }
 
         .item small {
             display: block;
             color: #6c757d;
-            margin-bottom: 9px;
+            margin-bottom: 10px;
             font-size: 13px;
         }
 
@@ -220,232 +243,256 @@ $foto = "assets/foto-profil.jpg";
             overflow-wrap: anywhere;
         }
 
-        /* DESKRIPSI */
+        .item i {
+            color: #0d6efd;
+            margin-right: 7px;
+        }
+
+        /* ==================================
+           DESKRIPSI
+        ================================== */
+
         .deskripsi {
-            margin-top: 22px;
-            padding: 20px;
+            margin-top: 25px;
+            padding: 22px;
             background: #eef5ff;
             border: 1px solid #d6e6ff;
-            border-radius: 7px;
+            border-radius: 8px;
             line-height: 1.8;
             font-size: 14px;
             color: #333;
         }
 
-        /* TOMBOL */
-        .btn {
-            display: inline-block;
-            margin-top: 22px;
-            padding: 10px 16px;
-            background: #212529;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
+        .deskripsi h5 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
 
-        .btn:hover {
-            background: #343a40;
+        /* ==================================
+           FOOTER
+        ================================== */
+
+        .footer-profile {
+            margin-top: 25px;
+            padding-top: 18px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+            line-height: 1.8;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .sidebar {
-                width: 220px;
+        /* ==================================
+           RESPONSIVE TABLET DAN HP
+        ================================== */
+
+        @media (max-width: 768px) {
+
+            .main-content {
+                margin-left: 0 !important;
+                width: 100%;
+                padding: 15px;
             }
 
-            .main {
-                margin-left: 220px;
-                width: calc(100% - 220px);
-                padding: 20px 15px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .sidebar {
-                width: 160px;
-                padding: 10px;
-            }
-
-            .sidebar h2 {
-                font-size: 16px;
-            }
-
-            .sidebar a {
-                font-size: 12px;
-                padding: 10px 7px;
-            }
-
-            .main {
-                margin-left: 160px;
-                width: calc(100% - 160px);
-                padding: 15px 10px;
-            }
-
-            .main h1 {
-                font-size: 22px;
-            }
-
-            .card-body {
-                padding: 12px;
-            }
-
-            .card-header {
+            .profile-body {
                 padding: 15px;
             }
 
             .profile {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
             }
 
             .profile h2 {
-                font-size: 19px;
+                font-size: 20px;
             }
 
             .info {
                 grid-template-columns: 1fr;
             }
 
-            .item {
-                padding: 15px;
+            .page-title {
+                font-size: 22px;
             }
         }
+
     </style>
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
+    <!-- ==================================
+         SIDEBAR
+    ================================== -->
 
-        <h2>Pelanggaran Siswa</h2>
+    <?php include 'layout/sidebar.php'; ?>
 
-        <a href="dashboard.php">Dashboard</a>
-        <a href="data_siswa.php">Data Siswa</a>
-        <a href="kelola_guru.php">Data Guru</a>
-        <a href="kelola_kelas.php">Data Kelas</a>
-        <a href="kelola_tahun_ajaran.php">Data Tahun Ajaran</a>
-        <a href="kelola_wali_kelas.php">Data Wali Kelas</a>
-        <a href="penempatan_siswa.php">Penempatan Siswa</a>
-        <a href="kelola_pelanggaran_kategori.php">Kategori Pelanggaran</a>
-        <a href="about_me.php" class="active">About Me</a>
 
-        <a href="logout.php" class="logout">Logout</a>
+    <!-- ==================================
+         KONTEN UTAMA
+    ================================== -->
 
-    </div>
+    <main class="main-content">
 
-    <!-- MAIN CONTENT -->
-    <div class="main">
+        <!-- JUDUL -->
+        <div class="mb-3">
+            <h3 class="page-title">
+                <i class="bi bi-person-circle"></i>
+                About Me
+            </h3>
 
-        <h1>About Me</h1>
-
-        <div class="breadcrumb">
-            Kelola dan lihat informasi profil pemilik akun.
+            <p class="page-description">
+                Informasi profil pembuat aplikasi.
+            </p>
         </div>
 
-        <!-- CARD -->
-        <div class="card">
 
-            <!-- CARD HEADER -->
-            <div class="card-header">
-                <h3>👤 Informasi Profil</h3>
+        <!-- CARD PROFIL -->
+        <div class="profile-card">
+
+            <div class="profile-header">
+                <h5>
+                    <i class="bi bi-person-vcard me-2"></i>
+                    Informasi Profil
+                </h5>
             </div>
 
-            <!-- CARD BODY -->
-            <div class="card-body">
 
+            <div class="profile-body">
+
+                <!-- TOMBOL KEMBALI -->
                 <a href="dashboard.php" class="btn-kembali">
-                    ← Kembali ke Dashboard
+                    <i class="bi bi-arrow-left"></i>
+                    Kembali ke Dashboard
                 </a>
 
-                <!-- PROFILE -->
+
+                <!-- PROFIL UTAMA -->
                 <div class="profile">
 
                     <div class="avatar">
 
-                        <?php if (file_exists($foto)) { ?>
+                        <?php if (file_exists($foto)) : ?>
 
-                            <img src="<?php echo htmlspecialchars($foto); ?>"
+                            <img
+                                src="<?= htmlspecialchars($foto); ?>"
                                 alt="Foto Profil">
 
-                        <?php } else { ?>
+                        <?php else : ?>
 
                             M.A
 
-                        <?php } ?>
+                        <?php endif; ?>
 
                     </div>
 
                     <div>
+
                         <h2>
-                            <?php echo htmlspecialchars($nama); ?>
+                            <?= htmlspecialchars($nama); ?>
                         </h2>
 
                         <p>
-                            <?php echo htmlspecialchars($kelas); ?>
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <?= htmlspecialchars($kelas); ?>
                         </p>
 
                         <p>
-                            <?php echo htmlspecialchars($jurusan); ?>
+                            <i class="bi bi-code-slash"></i>
+                            <?= htmlspecialchars($jurusan); ?>
                         </p>
+
+                        <span class="badge bg-primary">
+                            Siswa RPL
+                        </span>
+
                     </div>
 
                 </div>
 
+
                 <!-- INFORMASI PRIBADI -->
-                <h3 class="section-title">
+                <h5 class="section-title">
+                    <i class="bi bi-person-lines-fill text-primary"></i>
                     Informasi Pribadi
-                </h3>
+                </h5>
+
 
                 <div class="info">
 
                     <div class="item">
-                        <small>Nama Lengkap</small>
+                        <small>
+                            <i class="bi bi-person-fill"></i>
+                            Nama Lengkap
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($nama); ?>
+                            <?= htmlspecialchars($nama); ?>
                         </strong>
                     </div>
 
                     <div class="item">
-                        <small>Kelas</small>
+                        <small>
+                            <i class="bi bi-mortarboard-fill"></i>
+                            Kelas
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($kelas); ?>
+                            <?= htmlspecialchars($kelas); ?>
                         </strong>
                     </div>
 
                     <div class="item">
-                        <small>Sekolah</small>
+                        <small>
+                            <i class="bi bi-building"></i>
+                            Sekolah
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($sekolah); ?>
+                            <?= htmlspecialchars($sekolah); ?>
                         </strong>
                     </div>
 
                     <div class="item">
-                        <small>Jurusan</small>
+                        <small>
+                            <i class="bi bi-code-slash"></i>
+                            Jurusan
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($jurusan); ?>
+                            <?= htmlspecialchars($jurusan); ?>
                         </strong>
                     </div>
 
                     <div class="item">
-                        <small>Hobi</small>
+                        <small>
+                            <i class="bi bi-music-note-beamed"></i>
+                            Hobi
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($hobi); ?>
+                            <?= htmlspecialchars($hobi); ?>
                         </strong>
                     </div>
 
                     <div class="item">
-                        <small>Cita-cita</small>
+                        <small>
+                            <i class="bi bi-star-fill"></i>
+                            Cita-cita
+                        </small>
                         <strong>
-                            <?php echo htmlspecialchars($cita_cita); ?>
+                            <?= htmlspecialchars($cita_cita); ?>
                         </strong>
                     </div>
 
                 </div>
 
-                <!-- DESKRIPSI -->
+
+                <!-- TENTANG SAYA -->
                 <div class="deskripsi">
+
+                    <h5>
+                        <i class="bi bi-chat-left-text-fill text-primary"></i>
+                        Tentang Saya
+                    </h5>
 
                     Saya adalah pelajar SMK Muhammadiyah Tasikmalaya
                     jurusan Rekayasa Perangkat Lunak. Saya senang
@@ -454,16 +501,30 @@ $foto = "assets/foto-profil.jpg";
 
                 </div>
 
-                <!-- BUTTON -->
-                <a href="dashboard.php" class="btn">
-                    ← Kembali ke Dashboard
-                </a>
+
+                <!-- FOOTER -->
+                <div class="footer-profile">
+
+                    <i class="bi bi-code-slash"></i>
+
+                    Dibuat sebagai bagian dari proyek aplikasi
+                    Sistem Informasi Pelanggaran Siswa.
+
+                    <br>
+
+                    &copy; <?= date('Y'); ?>
+                    <?= htmlspecialchars($nama); ?>
+
+                </div>
 
             </div>
-
         </div>
 
-    </div>
+    </main>
+
+
+    <!-- JAVASCRIPT BOOTSTRAP -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

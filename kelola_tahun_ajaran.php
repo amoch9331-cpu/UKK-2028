@@ -56,9 +56,7 @@ $pesan = $_GET['pesan'] ?? '';
             overflow-x: hidden;
         }
 
-        /* =================================
-           SIDEBAR
-        ================================= */
+        /* SIDEBAR */
 
         #sidebar {
             position: fixed;
@@ -72,9 +70,7 @@ $pesan = $_GET['pesan'] ?? '';
             overflow-y: auto;
         }
 
-        /* =================================
-           KONTEN UTAMA
-        ================================= */
+        /* KONTEN UTAMA */
 
         .container-fluid {
             padding: 0;
@@ -95,9 +91,7 @@ $pesan = $_GET['pesan'] ?? '';
             background-color: #f4f5f7;
         }
 
-        /* =================================
-           JUDUL
-        ================================= */
+        /* JUDUL */
 
         .judul-halaman {
             font-size: 26px;
@@ -107,9 +101,7 @@ $pesan = $_GET['pesan'] ?? '';
             color: #212529;
         }
 
-        /* =================================
-           CARD
-        ================================= */
+        /* CARD */
 
         .card {
             width: 100%;
@@ -142,9 +134,7 @@ $pesan = $_GET['pesan'] ?? '';
             padding: 18px;
         }
 
-        /* =================================
-           TOMBOL TAMBAH
-        ================================= */
+        /* TOMBOL TAMBAH */
 
         .btn-tambah {
             background-color: #212529;
@@ -160,9 +150,7 @@ $pesan = $_GET['pesan'] ?? '';
             color: white;
         }
 
-        /* =================================
-           TOMBOL KEMBALI
-        ================================= */
+        /* TOMBOL KEMBALI */
 
         .btn-kembali {
             background-color: #6c757d;
@@ -176,9 +164,7 @@ $pesan = $_GET['pesan'] ?? '';
             color: white;
         }
 
-        /* =================================
-           TABEL
-        ================================= */
+        /* TABEL */
 
         #tabelTahunAjaran {
             width: 100% !important;
@@ -208,9 +194,7 @@ $pesan = $_GET['pesan'] ?? '';
             border: 1px solid #dee2e6;
         }
 
-        /* =================================
-           TOMBOL AKSI
-        ================================= */
+        /* TOMBOL AKSI */
 
         .btn-aksi {
             font-size: 12px;
@@ -247,75 +231,99 @@ $pesan = $_GET['pesan'] ?? '';
         }
 
         /* =================================
-           DATATABLES
+           DATATABLES - SEARCH
         ================================= */
 
         .dataTables_wrapper {
             font-size: 13px;
-            padding-top: 5px;
+            padding-top: 8px;
         }
 
-        .dataTables_wrapper .dataTables_length,
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 13px;
-        }
+        /* BARIS SEARCH DAN JUMLAH DATA */
 
-        .dataTables_wrapper .dataTables_length label {
+        .dataTables_wrapper .row {
             display: flex;
             align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-            margin-bottom: 10px;
-            font-weight: 400;
+            justify-content: space-between;
+            margin: 0 0 15px;
         }
 
-        .dataTables_wrapper .dataTables_length select {
-            width: 64px !important;
-            height: 34px !important;
-            padding: 4px 8px !important;
-            margin: 0 3px !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 5px !important;
-            background-color: #ffffff !important;
-            font-size: 13px !important;
-            text-align: center;
-            cursor: pointer;
-        }
+        /* KOTAK PENCARIAN */
 
-        /* PERUBAHAN: CARI DIPINDAHKAN KE KIRI */
         .dataTables_wrapper .dataTables_filter {
-            float: left !important;
+            float: none !important;
             text-align: left !important;
+            width: 100%;
+            margin: 0;
         }
 
         .dataTables_wrapper .dataTables_filter label {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 5px;
+            gap: 8px;
             white-space: nowrap;
-            font-weight: 400;
+            font-weight: 600;
+            margin: 0;
+            color: #212529;
         }
 
         .dataTables_wrapper .dataTables_filter input {
-            width: 160px;
-            height: 34px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 5px 8px;
+            width: 280px !important;
+            max-width: 100%;
+            height: 34px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 5px !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
             outline: none;
-            margin-left: 3px;
+            margin: 0 !important;
+            box-shadow: none;
+            background: #ffffff;
         }
 
-        .dataTables_wrapper .dataTables_filter input:focus,
-        .dataTables_wrapper .dataTables_length select:focus {
+        .dataTables_wrapper .dataTables_filter input:focus {
             border-color: #80bdff !important;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12) !important;
         }
+
+        /* JUMLAH DATA */
+
+        .dataTables_wrapper .dataTables_length {
+            float: none !important;
+            text-align: right !important;
+            margin: 0;
+        }
+
+        .dataTables_wrapper .dataTables_length label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+            white-space: nowrap;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            width: 65px !important;
+            height: 34px !important;
+            padding: 4px 8px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 5px !important;
+            background-color: #ffffff !important;
+            font-size: 13px !important;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        /* INFORMASI */
 
         .dataTables_wrapper .dataTables_info {
             padding-top: 10px;
         }
+
+        /* PAGINATION */
 
         .dataTables_wrapper .page-item.active .page-link {
             background-color: #212529;
@@ -328,9 +336,7 @@ $pesan = $_GET['pesan'] ?? '';
             font-size: 13px;
         }
 
-        /* =================================
-           RESPONSIVE
-        ================================= */
+        /* RESPONSIVE */
 
         @media (max-width: 768px) {
 
@@ -361,8 +367,29 @@ $pesan = $_GET['pesan'] ?? '';
                 font-size: 16px;
             }
 
+            .dataTables_wrapper .row {
+                display: block;
+            }
+
+            .dataTables_wrapper .dataTables_filter {
+                margin-bottom: 15px;
+            }
+
+            .dataTables_wrapper .dataTables_filter label {
+                flex-wrap: wrap;
+            }
+
             .dataTables_wrapper .dataTables_filter input {
-                width: 130px;
+                width: 280px !important;
+                max-width: 100%;
+            }
+
+            .dataTables_wrapper .dataTables_length {
+                text-align: left !important;
+            }
+
+            .dataTables_wrapper .dataTables_length label {
+                justify-content: flex-start;
             }
 
         }
@@ -424,8 +451,6 @@ $pesan = $_GET['pesan'] ?? '';
             <!-- CARD DATA TAHUN AJARAN -->
 
             <div class="card">
-
-                <!-- HEADER CARD -->
 
                 <div class="card-header d-flex justify-content-between align-items-center">
 
@@ -628,9 +653,16 @@ $(document).ready(function () {
 
     $('#tabelTahunAjaran').DataTable({
 
+        dom:
+            '<"row mb-3"<"col-md-6"f><"col-md-6"l>>' +
+            'rt' +
+            '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+
         language: {
 
-            search: "Cari:",
+            search: "Cari Tahun Ajaran:",
+
+            searchPlaceholder: "Masukkan nama tahun ajaran...",
 
             lengthMenu: "Tampilkan _MENU_ data",
 

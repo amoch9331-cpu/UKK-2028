@@ -98,7 +98,6 @@ $pesan = $_GET['pesan'] ?? '';
         .judul-halaman {
             font-size: 26px;
             font-weight: 700;
-            margin-top: 0;
             margin-bottom: 3px;
             color: #212529;
         }
@@ -116,12 +115,11 @@ $pesan = $_GET['pesan'] ?? '';
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-top: 0;
             background: #fff;
         }
 
         .card-header {
-            background: #ffffff;
+            background: #fff;
             border-bottom: 1px solid #dee2e6;
             padding: 16px 20px;
         }
@@ -136,7 +134,7 @@ $pesan = $_GET['pesan'] ?? '';
             padding: 18px;
         }
 
-        /* TOMBOL TAMBAH */
+        /* TOMBOL */
         .btn-tambah {
             background: #212529;
             border-color: #212529;
@@ -150,7 +148,6 @@ $pesan = $_GET['pesan'] ?? '';
             color: white;
         }
 
-        /* TOMBOL KEMBALI */
         .btn-kembali {
             background: #6c757d;
             border-color: #6c757d;
@@ -230,56 +227,80 @@ $pesan = $_GET['pesan'] ?? '';
         /* DATATABLES */
         .dataTables_wrapper {
             font-size: 13px;
-            padding-top: 10px;
+            padding-top: 5px;
         }
 
-        .dataTables_wrapper .dataTables_filter,
-        .dataTables_wrapper .dataTables_length {
+        /* BARIS PENCARIAN DAN JUMLAH DATA */
+        .dataTables_wrapper .dataTables_filter {
             float: left !important;
             width: 100%;
             text-align: left !important;
-            margin-bottom: 13px;
+            margin-bottom: 15px;
         }
 
-        /* PENCARIAN DI KIRI */
+        .dataTables_wrapper .dataTables_length {
+            float: right !important;
+            width: 100%;
+            text-align: right !important;
+            margin-bottom: 15px;
+        }
+
+        /* LABEL PENCARIAN */
         .dataTables_wrapper .dataTables_filter label {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 10px;
+            font-weight: 600;
+            margin: 0;
+            color: #343a40;
         }
 
+        /* INPUT PENCARIAN */
         .dataTables_wrapper .dataTables_filter input {
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 5px 8px;
+            width: 280px !important;
+            height: 38px !important;
+            padding: 7px 12px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 8px !important;
             outline: none;
+            box-shadow: none;
             margin-left: 0 !important;
-            height: 34px;
-            width: 180px;
+            font-size: 13px;
         }
 
-        /* TAMPILKAN DATA TETAP DI KIRI */
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #343a40 !important;
+            box-shadow: 0 0 0 3px rgba(52,58,64,0.12);
+        }
+
+        /* LABEL JUMLAH DATA */
         .dataTables_wrapper .dataTables_length label {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 5px;
+            justify-content: flex-end;
+            gap: 8px;
+            font-weight: 600;
+            margin: 0;
             white-space: nowrap;
-            margin-bottom: 10px;
         }
 
+        /* SELECT JUMLAH DATA */
         .dataTables_wrapper .dataTables_length select {
-            width: 65px !important;
-            height: 34px !important;
-            padding: 4px 5px !important;
-            margin: 0 5px !important;
+            width: 75px !important;
+            height: 38px !important;
+            padding: 5px 8px !important;
             border: 1px solid #ced4da !important;
-            border-radius: 5px !important;
+            border-radius: 8px !important;
             font-size: 13px !important;
             background: white !important;
             cursor: pointer;
+        }
+
+        /* INFO TABEL */
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 12px;
+            color: #6c757d;
         }
 
         /* PAGINATION */
@@ -290,6 +311,20 @@ $pesan = $_GET['pesan'] ?? '';
 
         .dataTables_wrapper .page-link {
             color: #212529;
+        }
+
+        /* MENGATUR BARIS DATATABLES */
+        .dataTables_wrapper .row {
+            display: flex !important;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        .dataTables_wrapper .row > div {
+            padding-left: 15px;
+            padding-right: 15px;
         }
 
         /* RESPONSIVE */
@@ -313,11 +348,17 @@ $pesan = $_GET['pesan'] ?? '';
                 padding: 12px;
             }
 
+            .card-header {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
             .dataTables_wrapper .dataTables_filter,
             .dataTables_wrapper .dataTables_length {
                 float: none !important;
                 width: 100%;
                 text-align: left !important;
+                margin-bottom: 15px;
             }
 
             .dataTables_wrapper .dataTables_filter label,
@@ -327,7 +368,8 @@ $pesan = $_GET['pesan'] ?? '';
             }
 
             .dataTables_wrapper .dataTables_filter input {
-                width: 150px;
+                width: 100% !important;
+                max-width: 280px;
             }
         }
     </style>
@@ -336,195 +378,203 @@ $pesan = $_GET['pesan'] ?? '';
 <body>
 
 <div class="container-fluid">
-    <div class="row">
 
-        <!-- SIDEBAR -->
-        <?php include 'layout/sidebar.php'; ?>
+    <!-- SIDEBAR -->
+    <?php include 'layout/sidebar.php'; ?>
 
-        <!-- KONTEN UTAMA -->
-        <main>
+    <!-- KONTEN UTAMA -->
+    <main>
 
-            <h3 class="judul-halaman">
-                Kelola Wali Kelas
-            </h3>
+        <h3 class="judul-halaman">
+            Kelola Wali Kelas
+        </h3>
 
-            <p class="deskripsi-halaman">
-                Kelola dan pantau seluruh data wali kelas yang terdaftar dalam sistem.
-            </p>
+        <p class="deskripsi-halaman">
+            Kelola dan pantau seluruh data wali kelas yang terdaftar dalam sistem.
+        </p>
 
-            <!-- NOTIFIKASI -->
-            <?php if ($pesan == 'hapus_berhasil') { ?>
+        <!-- NOTIFIKASI -->
+        <?php if ($pesan == 'hapus_berhasil') { ?>
 
-                <div class="alert alert-success alert-dismissible fade show">
-                    Data wali kelas berhasil dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } elseif ($pesan == 'hapus_gagal') { ?>
-
-                <div class="alert alert-danger alert-dismissible fade show">
-                    Data wali kelas gagal dihapus.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } elseif ($pesan == 'data_tidak_ditemukan') { ?>
-
-                <div class="alert alert-warning alert-dismissible fade show">
-                    Data wali kelas tidak ditemukan.
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-            <?php } ?>
-
-            <!-- CARD DATA WALI KELAS -->
-            <div class="card">
-
-                <div class="card-header d-flex justify-content-between align-items-center">
-
-                    <h5 class="judul-card">
-                        <i class="bi bi-person-badge mr-2"></i>
-                        Data Wali Kelas
-                    </h5>
-
-                    <a href="tambah_wali_kelas.php" class="btn btn-tambah btn-sm">
-                        <i class="bi bi-plus-lg mr-1"></i>
-                        Tambah Wali Kelas
-                    </a>
-
-                </div>
-
-                <div class="card-body">
-
-                    <!-- KEMBALI -->
-                    <div class="mb-4">
-                        <a href="dashboard.php" class="btn btn-kembali btn-sm">
-                            <i class="bi bi-arrow-left mr-1"></i>
-                            Kembali ke Dashboard
-                        </a>
-                    </div>
-
-                    <!-- TABEL -->
-                    <div class="table-responsive">
-
-                        <table id="tabelWaliKelas"
-                               class="table table-striped table-bordered table-hover">
-
-                            <thead>
-                                <tr>
-                                    <th>No.</th>
-                                    <th>ID</th>
-                                    <th>Tahun Ajaran ID</th>
-                                    <th>Kelas</th>
-                                    <th>Guru</th>
-                                    <th>Tanggal Mulai</th>
-                                    <th>Tanggal Selesai</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <?php
-                                $no = 1;
-
-                                while ($row = mysqli_fetch_assoc($hasil)) {
-                                    $id = (string) $row['id'];
-                                ?>
-
-                                <tr>
-                                    <td><?= $no++; ?></td>
-
-                                    <td>
-                                        <?= htmlspecialchars($id, ENT_QUOTES, 'UTF-8'); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['tahun_ajaran_id'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['nama_kelas'] ?? '-'),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['nama_guru'] ?? '-'),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['tanggal_mulai'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?= htmlspecialchars(
-                                            (string) ($row['tanggal_selesai'] ?? ''),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>
-                                    </td>
-
-                                    <td>
-                                        <?php if ((int) $row['status_aktif'] === 1) { ?>
-                                            <span class="badge badge-success">
-                                                Aktif
-                                            </span>
-                                        <?php } else { ?>
-                                            <span class="badge badge-danger">
-                                                Tidak Aktif
-                                            </span>
-                                        <?php } ?>
-                                    </td>
-
-                                    <td style="white-space: nowrap;">
-
-                                        <a href="edit_wali_kelas.php?id=<?= urlencode($id); ?>"
-                                           class="btn btn-edit btn-sm btn-aksi">
-                                            <i class="bi bi-pencil-square"></i>
-                                            Edit
-                                        </a>
-
-                                        <a href="hapus_wali_kelas.php?id=<?= urlencode($id); ?>"
-                                           class="btn btn-hapus btn-sm btn-aksi"
-                                           onclick="return confirm('Yakin ingin menghapus data wali kelas ini?');">
-                                            <i class="bi bi-trash"></i>
-                                            Hapus
-                                        </a>
-
-                                    </td>
-                                </tr>
-
-                                <?php } ?>
-                            </tbody>
-
-                        </table>
-
-                    </div>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show">
+                Data wali kelas berhasil dihapus.
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
             </div>
 
-        </main>
-    </div>
+        <?php } elseif ($pesan == 'hapus_gagal') { ?>
+
+            <div class="alert alert-danger alert-dismissible fade show">
+                Data wali kelas gagal dihapus.
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+        <?php } elseif ($pesan == 'data_tidak_ditemukan') { ?>
+
+            <div class="alert alert-warning alert-dismissible fade show">
+                Data wali kelas tidak ditemukan.
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+        <?php } ?>
+
+        <!-- CARD -->
+        <div class="card">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <h5 class="judul-card">
+                    <i class="bi bi-person-badge mr-2"></i>
+                    Data Wali Kelas
+                </h5>
+
+                <a href="tambah_wali_kelas.php" class="btn btn-tambah btn-sm">
+                    <i class="bi bi-plus-lg mr-1"></i>
+                    Tambah Wali Kelas
+                </a>
+
+            </div>
+
+            <div class="card-body">
+
+                <!-- TOMBOL KEMBALI -->
+                <div class="mb-4">
+                    <a href="dashboard.php" class="btn btn-kembali btn-sm">
+                        <i class="bi bi-arrow-left mr-1"></i>
+                        Kembali ke Dashboard
+                    </a>
+                </div>
+
+                <!-- TABEL -->
+                <div class="table-responsive">
+
+                    <table id="tabelWaliKelas"
+                           class="table table-striped table-bordered table-hover">
+
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>ID</th>
+                                <th>Tahun Ajaran ID</th>
+                                <th>Kelas</th>
+                                <th>Guru</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <?php
+                            $no = 1;
+
+                            while ($row = mysqli_fetch_assoc($hasil)) {
+                                $id = (string) $row['id'];
+                            ?>
+
+                            <tr>
+
+                                <td><?= $no++; ?></td>
+
+                                <td>
+                                    <?= htmlspecialchars($id, ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($row['tahun_ajaran_id'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($row['nama_kelas'] ?? '-'),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($row['nama_guru'] ?? '-'),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($row['tanggal_mulai'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) ($row['tanggal_selesai'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </td>
+
+                                <td>
+                                    <?php if ((int) $row['status_aktif'] === 1) { ?>
+
+                                        <span class="badge badge-success">
+                                            Aktif
+                                        </span>
+
+                                    <?php } else { ?>
+
+                                        <span class="badge badge-danger">
+                                            Tidak Aktif
+                                        </span>
+
+                                    <?php } ?>
+                                </td>
+
+                                <td style="white-space: nowrap;">
+
+                                    <a href="edit_wali_kelas.php?id=<?= urlencode($id); ?>"
+                                       class="btn btn-edit btn-sm btn-aksi">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Edit
+                                    </a>
+
+                                    <a href="hapus_wali_kelas.php?id=<?= urlencode($id); ?>"
+                                       class="btn btn-hapus btn-sm btn-aksi"
+                                       onclick="return confirm('Yakin ingin menghapus data wali kelas ini?');">
+                                        <i class="bi bi-trash"></i>
+                                        Hapus
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                            <?php } ?>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
 </div>
 
 <!-- JAVASCRIPT -->
@@ -541,13 +591,36 @@ $(document).ready(function () {
 
     $('#tabelWaliKelas').DataTable({
 
+        responsive: true,
+        autoWidth: false,
+
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+
+        searching: true,
+        ordering: true,
+        paging: true,
+
+        // PENCARIAN KIRI DAN JUMLAH DATA KANAN
+        dom:
+            '<"row mb-3"<"col-md-6"f><"col-md-6"l>>' +
+            'rt' +
+            '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+
         language: {
-            search: "Cari:",
+            search: "Cari Wali Kelas:",
+            searchPlaceholder: "Masukkan nama guru atau kelas...",
+
             lengthMenu: "Tampilkan _MENU_ data",
+
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data wali kelas",
+
             infoEmpty: "Tidak ada data wali kelas",
+
             infoFiltered: "(difilter dari _MAX_ total data)",
+
             zeroRecords: "Data wali kelas tidak ditemukan",
+
             emptyTable: "Belum ada data wali kelas",
 
             paginate: {
@@ -557,13 +630,6 @@ $(document).ready(function () {
                 previous: "Sebelumnya"
             }
         },
-
-        pageLength: 10,
-        lengthMenu: [5, 10, 25, 50, 100],
-        searching: true,
-        ordering: true,
-        paging: true,
-        autoWidth: false,
 
         columnDefs: [
             {

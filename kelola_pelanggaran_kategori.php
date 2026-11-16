@@ -1,6 +1,8 @@
 
 <?php
-// kelola_pelanggaran.php
+// ==========================================
+// KELOLA PELANGGARAN - SIPENSIS
+// ==========================================
 
 include 'includes/cek_session.php';
 include 'config/koneksi.php';
@@ -27,12 +29,10 @@ if (!$hasil) {
 }
 
 $pesan = $_GET['pesan'] ?? '';
-
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
 
     <meta charset="UTF-8">
@@ -58,30 +58,41 @@ $pesan = $_GET['pesan'] ?? '';
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
             margin: 0;
             padding: 0;
+            min-height: 100%;
+            width: 100%;
+        }
+
+        body {
             background: #f4f5f7;
             font-family: Arial, sans-serif;
             color: #212529;
             overflow-x: hidden;
         }
 
-        /* SIDEBAR */
+        /* =====================================
+           SIDEBAR KIRI
+        ===================================== */
 
         #sidebar {
-            position: fixed;
+            position: fixed !important;
             top: 0;
             left: 0;
-            width: 260px;
+            width: 260px !important;
+            min-width: 260px;
             height: 100vh;
             min-height: 100vh;
-            background: #1a1d20;
+            background: #1a1d20 !important;
             z-index: 1000;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        /* KONTEN UTAMA */
+        /* =====================================
+           KONTEN UTAMA DI SEBELAH KANAN
+        ===================================== */
 
         .container-fluid {
             padding: 0;
@@ -94,15 +105,18 @@ $pesan = $_GET['pesan'] ?? '';
 
         main {
             display: block;
+            position: relative;
             margin-left: 260px !important;
             width: calc(100% - 260px) !important;
             max-width: none !important;
             min-height: 100vh;
-            padding: 15px 25px 25px !important;
+            padding: 20px 25px 25px !important;
             background: #f4f5f7;
         }
 
-        /* JUDUL */
+        /* =====================================
+           JUDUL
+        ===================================== */
 
         .judul-halaman {
             font-size: 26px;
@@ -111,7 +125,9 @@ $pesan = $_GET['pesan'] ?? '';
             color: #212529;
         }
 
-        /* CARD */
+        /* =====================================
+           CARD
+        ===================================== */
 
         .card {
             width: 100%;
@@ -123,6 +139,9 @@ $pesan = $_GET['pesan'] ?? '';
         }
 
         .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: white;
             border-bottom: 1px solid #dee2e6;
             padding: 16px 20px;
@@ -139,7 +158,9 @@ $pesan = $_GET['pesan'] ?? '';
             padding: 18px;
         }
 
-        /* TOMBOL */
+        /* =====================================
+           TOMBOL
+        ===================================== */
 
         .btn-tambah {
             background: #212529;
@@ -184,7 +205,14 @@ $pesan = $_GET['pesan'] ?? '';
             margin-right: 3px;
         }
 
-        /* TABEL */
+        /* =====================================
+           TABEL
+        ===================================== */
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
 
         #tabelPelanggaran {
             width: 100% !important;
@@ -209,49 +237,40 @@ $pesan = $_GET['pesan'] ?? '';
             background: #f1f1f1;
         }
 
-        /* DATATABLES */
+        /* =====================================
+           DATATABLES
+        ===================================== */
 
         .dataTables_wrapper {
+            width: 100%;
             font-size: 13px;
             padding-top: 5px;
         }
 
-        /* BARIS PENCARIAN */
+        /* JUMLAH DATA DAN PENCARIAN */
 
         .dataTables_wrapper > .row:first-child {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 12px;
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100%;
+            margin: 0 0 15px 0 !important;
         }
 
         .dataTables_wrapper > .row:first-child > div {
-            width: 100%;
-            max-width: 100%;
-            flex: 0 0 100%;
+            width: auto !important;
+            max-width: 50%;
+            flex: 0 0 auto !important;
             text-align: left !important;
+            padding: 0 !important;
         }
 
+        /* TAMPILKAN JUMLAH DATA */
         .dataTables_wrapper .dataTables_length {
-            float: left;
-            text-align: left;
-            margin-bottom: 10px;
-        }
-
-        .dataTables_wrapper .dataTables_filter {
-            float: left !important;
+            float: none !important;
             text-align: left !important;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .dataTables_wrapper .dataTables_filter label {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start !important;
-            gap: 5px;
-            white-space: nowrap;
-            font-weight: 400;
+            margin: 0;
         }
 
         .dataTables_wrapper .dataTables_length label {
@@ -260,6 +279,7 @@ $pesan = $_GET['pesan'] ?? '';
             gap: 5px;
             white-space: nowrap;
             font-weight: 400;
+            margin: 0;
         }
 
         .dataTables_wrapper .dataTables_length select {
@@ -271,8 +291,26 @@ $pesan = $_GET['pesan'] ?? '';
             margin: 0 3px;
         }
 
+        /* PENCARIAN DI KANAN */
+        .dataTables_wrapper .dataTables_filter {
+            float: none !important;
+            text-align: right !important;
+            margin: 0;
+            width: auto;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+            white-space: nowrap;
+            font-weight: 400;
+            margin: 0;
+        }
+
         .dataTables_wrapper .dataTables_filter input {
-            width: 180px;
+            width: 220px;
             height: 34px;
             border: 1px solid #ced4da;
             border-radius: 5px;
@@ -286,8 +324,15 @@ $pesan = $_GET['pesan'] ?? '';
             box-shadow: 0 0 0 3px rgba(0,123,255,.15);
         }
 
+        /* INFORMASI TABEL */
         .dataTables_wrapper .dataTables_info {
             padding-top: 10px;
+            text-align: left;
+        }
+
+        /* PAGINATION */
+        .dataTables_wrapper .dataTables_paginate {
+            text-align: right;
         }
 
         .dataTables_wrapper .page-item.active .page-link {
@@ -306,12 +351,15 @@ $pesan = $_GET['pesan'] ?? '';
             padding: 6px 8px;
         }
 
-        /* RESPONSIVE */
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
 
-        @media(max-width:768px) {
+        @media(max-width: 768px) {
 
             #sidebar {
-                width: 0;
+                width: 0 !important;
+                min-width: 0 !important;
                 overflow: hidden;
             }
 
@@ -331,10 +379,37 @@ $pesan = $_GET['pesan'] ?? '';
 
             .card-header {
                 padding: 12px;
+                gap: 8px;
+            }
+
+            .dataTables_wrapper > .row:first-child {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+
+            .dataTables_wrapper > .row:first-child > div {
+                width: 100% !important;
+                max-width: 100%;
+            }
+
+            .dataTables_wrapper .dataTables_filter {
+                text-align: left !important;
+            }
+
+            .dataTables_wrapper .dataTables_filter label {
+                justify-content: flex-start;
+                flex-wrap: wrap;
             }
 
             .dataTables_wrapper .dataTables_filter input {
-                width: 140px;
+                width: 180px;
+                max-width: 100%;
+            }
+
+            .dataTables_wrapper .dataTables_paginate {
+                text-align: left;
+                overflow-x: auto;
             }
         }
 
@@ -351,7 +426,7 @@ $pesan = $_GET['pesan'] ?? '';
         <!-- SIDEBAR -->
         <?php include 'layout/sidebar.php'; ?>
 
-        <!-- KONTEN UTAMA -->
+        <!-- KONTEN UTAMA SEBELAH KANAN -->
         <main>
 
             <h3 class="judul-halaman">
@@ -365,6 +440,7 @@ $pesan = $_GET['pesan'] ?? '';
 
                 <div class="alert alert-success alert-dismissible fade show">
                     Data pelanggaran berhasil dihapus.
+
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>
@@ -374,6 +450,7 @@ $pesan = $_GET['pesan'] ?? '';
 
                 <div class="alert alert-danger alert-dismissible fade show">
                     Data pelanggaran gagal dihapus.
+
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>
@@ -385,14 +462,14 @@ $pesan = $_GET['pesan'] ?? '';
 
             <div class="card">
 
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
 
                     <h5 class="judul-card">
                         <i class="bi bi-exclamation-triangle-fill mr-2"></i>
                         Data Pelanggaran
                     </h5>
 
-                    <a href="tambah_pelanggaran.php"
+                    <a href="tambah_pelanggaran.php?aksi=tambah"
                        class="btn btn-tambah btn-sm">
 
                         <i class="bi bi-plus-lg mr-1"></i>
@@ -426,7 +503,6 @@ $pesan = $_GET['pesan'] ?? '';
                                class="table table-striped table-bordered table-hover">
 
                             <thead>
-
                                 <tr>
                                     <th>No.</th>
                                     <th>Nama Pelanggaran</th>
@@ -434,7 +510,6 @@ $pesan = $_GET['pesan'] ?? '';
                                     <th>Poin</th>
                                     <th>Aksi</th>
                                 </tr>
-
                             </thead>
 
                             <tbody>
@@ -533,6 +608,8 @@ $(document).ready(function () {
         language: {
 
             search: "Cari:",
+
+            searchPlaceholder: "Cari pelanggaran...",
 
             lengthMenu: "Tampilkan _MENU_ data",
 

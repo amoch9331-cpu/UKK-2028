@@ -215,21 +215,25 @@ $pesan = $_GET['pesan'] ?? '';
             font-size: 11px;
         }
 
-        /* DATATABLES */
+        /* =================================
+           DATATABLES
+        ================================= */
 
         .dataTables_wrapper {
             padding-top: 8px;
             font-size: 13px;
         }
 
-        /* PENCARIAN KIRI DAN JUMLAH DATA KANAN */
+        /* BARIS SEARCH DAN JUMLAH DATA */
 
         .dataTables_wrapper .row:first-child {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 0 0 15px;
+            margin: 0 0 18px;
         }
+
+        /* PENCARIAN */
 
         .dataTables_wrapper .dataTables_filter {
             float: none !important;
@@ -242,27 +246,37 @@ $pesan = $_GET['pesan'] ?? '';
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 8px;
+            gap: 10px;
             white-space: nowrap;
             font-weight: 600;
             margin: 0;
+            color: #212529;
         }
+
+        /* KOTAK INPUT SEARCH */
 
         .dataTables_wrapper .dataTables_filter input {
-            width: 230px;
-            height: 38px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 13px;
+            width: 280px !important;
+            max-width: 100%;
+            height: 34px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 5px !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
             outline: none;
-            margin: 0;
+            margin: 0 !important;
+            box-shadow: none;
+            background: #fff;
         }
 
+        /* EFEK FOCUS SEARCH */
+
         .dataTables_wrapper .dataTables_filter input:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+            border-color: #80bdff !important;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.12) !important;
         }
+
+        /* JUMLAH DATA */
 
         .dataTables_wrapper .dataTables_length {
             float: none !important;
@@ -287,6 +301,8 @@ $pesan = $_GET['pesan'] ?? '';
             border-radius: 5px;
             padding: 4px 8px;
         }
+
+        /* INFORMASI DAN PAGINATION */
 
         .dataTables_wrapper .dataTables_info {
             padding-top: 12px;
@@ -346,8 +362,13 @@ $pesan = $_GET['pesan'] ?? '';
                 margin-bottom: 15px;
             }
 
+            .dataTables_wrapper .dataTables_filter label {
+                flex-wrap: wrap;
+            }
+
             .dataTables_wrapper .dataTables_filter input {
-                width: 190px;
+                width: 280px !important;
+                max-width: 100%;
             }
 
             .dataTables_wrapper .dataTables_length {
